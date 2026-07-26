@@ -21,10 +21,8 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
 const menuItems = [
-    { name: "Нүүр", icon: Home, href: "/", type: "link", iconType: "lucide" },
-    { name: "Вэбтүүн", icon: LayoutGrid, href: "/webtoon", type: "link", iconType: "lucide" },
+    { name: "Нүүр / Видео", icon: Film, href: "/videos", type: "link", iconType: "lucide" },
     { name: "Эрх сунгах", icon: Crown, href: "/vip", type: "link", iconType: "lucide" },
-    { name: "Видео", icon: Film, href: "/videos", type: "link", iconType: "lucide" },
     { name: "Профайл", icon: User, href: "/profile", type: "link", iconType: "lucide" },
 ];
 
