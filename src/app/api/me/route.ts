@@ -27,11 +27,37 @@ export async function GET(req: NextRequest) {
             .eq("id", user.id)
             .single();
 
-        if (profileError) {
-            return NextResponse.json({ error: profileError.message }, { status: 500 });
+        let userProfile = profile || {
+            id: user.id,
+            username: user.email?.split('@')[0] || 'User',
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+            avatar_url: user.user_metadata?.avatar_url || null,
+            is_admin: false,
+            is_vip: false,
+            is_moderator: false
+        };
+
+        // Ensure target admin email gets Admin & VIP status
+        if (user.email === 'erka050719@gmail.com') {
+            userProfile.is_admin = true;
+            userProfile.is_vip = true;
+            userProfile.is_moderator = true;
+            
+            // Persist to profiles DB table
+            await adminDb
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    username: userProfile.username || 'erka050719',
+                    full_name: userProfile.full_name || 'Erka Admin',
+                    avatar_url: userProfile.avatar_url,
+                    is_admin: true,
+                    is_vip: true,
+                    is_moderator: true
+                });
         }
 
-        return NextResponse.json(profile);
+        return NextResponse.json(userProfile);
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }

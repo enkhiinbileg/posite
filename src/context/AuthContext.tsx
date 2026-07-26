@@ -77,20 +77,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // 3. Fallback to basic user info if profile database entry is missing/loading
-            if (!profileData && userRef.current) {
+            if (profileData || userRef.current) {
                 const u = userRef.current;
-                profileData = {
-                    id: u.id,
-                    email: u.email,
-                    full_name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'User',
-                    avatar_url: u.user_metadata?.avatar_url || null,
-                    role: 'user',
-                    coins: 0,
+                const isAdminUser = u?.email === 'erka050719@gmail.com';
+                const finalProfile = {
+                    ...(profileData || {}),
+                    id: u?.id || profileData?.id,
+                    email: u?.email || profileData?.email,
+                    full_name: profileData?.full_name || u?.user_metadata?.full_name || u?.email?.split('@')[0] || 'User',
+                    avatar_url: profileData?.avatar_url || u?.user_metadata?.avatar_url || null,
+                    is_admin: isAdminUser || profileData?.is_admin || false,
+                    is_vip: isAdminUser || profileData?.is_vip || false,
+                    is_moderator: isAdminUser || profileData?.is_moderator || false,
                 };
-            }
-
-            if (profileData) {
-                setProfile(profileData);
+                setProfile(finalProfile);
                 setLastFetchTime(Date.now());
             }
         } catch (err: any) {
