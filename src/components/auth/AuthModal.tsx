@@ -62,8 +62,24 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
         }
     };
 
-    const handleGoogleAuth = () => {
-        window.location.href = '/api/auth/google';
+    const handleGoogleAuth = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        prompt: 'select_account'
+                    }
+                }
+            });
+            if (error) throw error;
+        } catch (err: any) {
+            setError(err.message || 'Google Auth Error');
+            setLoading(false);
+        }
     };
 
     return (
