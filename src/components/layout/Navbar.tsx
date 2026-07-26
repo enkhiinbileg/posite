@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Bell, User, LogOut, Medal, Crown, Settings, Youtube, Languages, Users, Flame, Calendar } from "lucide-react";
+import { Search, Bell, User, LogOut, Medal, Crown, Settings, Youtube, Languages, Users, Flame, Calendar, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -257,48 +257,49 @@ export function Navbar() {
             <NotificationOverlay isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
             <MilestonePopup isOpen={isMilestoneOpen} onClose={() => setIsMilestoneOpen(false)} strikeCount={strikeCount} />
 
-            <header className={cn(
-                "fixed top-0 z-50 w-full lg:w-[calc(100%-6rem)] lg:left-24 transition-all duration-500 px-2 sm:px-4 lg:px-12 py-2 lg:py-5",
-                scrolled ? "bg-black/98 backdrop-blur-sm shadow-2xl" : "bg-gradient-to-b from-black/80 via-black/40 to-transparent"
-            )}>
-                <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                        {/* Logo Section */}
-                        <Link href="/" className="flex items-center gap-3 group">
-                            <div className="relative w-8 h-8 lg:w-10 lg:h-10 transition-transform group-hover:scale-105">
-                                <img
-                                    src="/logo.png?v=6"
-                                    alt="MyToon Logo"
-                                    className="w-full h-full object-contain"
-                                />
-                            </div>
-                            <span className="hidden sm:inline font-black text-xl lg:text-2xl tracking-tighter uppercase italic text-white group-hover:text-primary transition-colors">MyToon</span>
+            <header className="fixed top-0 z-50 w-full bg-white border-b border-zinc-200 shadow-sm text-zinc-900 px-4 lg:px-8 py-2.5">
+                <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-6 lg:gap-8">
+                        {/* FUQ Logo */}
+                        <Link href="/videos" className="flex items-center group">
+                            <span className="font-black italic text-3xl tracking-tighter uppercase text-[#f3b509] font-sans drop-shadow-sm">
+                                FUQ
+                            </span>
                         </Link>
 
-                        {/* Navigation Links */}
-                        <nav className="hidden lg:flex items-center gap-8">
-                            <Link href="/schedule" className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70 hover:text-white transition-all flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Хуваарь
+                        {/* FUQ Header Nav Links */}
+                        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-zinc-700">
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
+                                Videos <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                            </Link>
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
+                                Categories <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                            </Link>
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
+                                Pornstars <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                            </Link>
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
+                                More <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                         </nav>
                     </div>
 
-                    {/* Right Section: Stats & Profile */}
-                    <div className="flex items-center gap-2 sm:gap-4 lg:gap-8">
-                        {/* Search Trigger */}
-                        <button
+                    {/* FUQ Center-Right Search Bar & Tools */}
+                    <div className="flex items-center gap-3 flex-1 max-w-xl justify-end">
+                        <div 
                             onClick={() => window.dispatchEvent(new Event('openSearch'))}
-                            aria-label="Хайлт нээх (⌘K)"
-                            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group relative"
+                            className="relative flex items-center w-full max-w-md bg-white border border-zinc-300 rounded-lg px-3 py-1.5 shadow-inner cursor-pointer hover:border-zinc-400 transition-colors"
                         >
-                            <Search className="w-5 h-5" />
-                            {/* Keyboard Hint */}
-                            <div className="hidden xl:flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-white/50">
-                                <span>⌘</span>
-                                <span>K</span>
+                            <input 
+                                type="text"
+                                readOnly
+                                placeholder="Pov (Point Of View)"
+                                className="w-full bg-transparent text-sm text-zinc-800 placeholder:text-zinc-500 focus:outline-none font-medium cursor-pointer"
+                            />
+                            <div className="flex items-center gap-2 text-zinc-400 border-l border-zinc-200 pl-2.5 ml-1">
+                                <Search className="w-4 h-4 text-zinc-600 hover:text-zinc-900" />
                             </div>
-                        </button>
+                        </div>
 
                         {(isAdmin || isModerator || isYouTuber) && (
                             <Link

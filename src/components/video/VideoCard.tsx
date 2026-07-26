@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Eye, Crown, CheckCircle2 } from "lucide-react";
+import { ThumbsUp, MoreVertical, CheckCircle2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { mn } from "date-fns/locale";
 
@@ -13,72 +13,59 @@ interface VideoCardProps {
 export function VideoCard({ video }: VideoCardProps) {
     const isFree = video.is_free || (video.price_purchase === 0 && video.price_rental === 0);
     const duration = video.duration || "12:45";
-    const views = video.views ? (video.views > 1000 ? `${(video.views / 1000).toFixed(1)}k` : video.views) : "14.2k";
+    const ratingPercent = video.rating || (Math.abs(video.id?.charCodeAt(0) || 75) % 30) + 70; // 70% - 99%
+    const is4K = (video.id?.charCodeAt(0) || 0) % 2 === 0;
+    const qualityTag = is4K ? "4K" : "HD";
+    const sourceName = video.uploader_name || "MyToon.mn";
 
     return (
-        <Link href={`/videos/${video.id}`} className="group flex flex-col gap-2.5 cursor-pointer select-none">
-            {/* FUQ Style Thumbnail Container */}
-            <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-[#161220] border border-white/10 shadow-lg transition-all duration-300 group-hover:border-red-600/50 group-hover:shadow-[0_0_25px_rgba(229,9,20,0.25)]">
+        <div className="group flex flex-col gap-1.5 cursor-pointer select-none">
+            {/* 16:9 Thumbnail Container */}
+            <Link href={`/videos/${video.id}`} className="relative aspect-[16/9] w-full rounded-lg overflow-hidden bg-zinc-900 border border-zinc-200/80 shadow-sm group-hover:shadow-md transition-shadow">
                 <Image
                     src={video.thumbnail_url || "/images/placeholder-video.jpg"}
                     alt={video.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
                     unoptimized
                 />
 
-                {/* Dark Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
-
-                {/* Top-Left HD Badge */}
-                <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded bg-red-600 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-md">
-                    HD
+                {/* Bottom-Left Green Like % Badge */}
+                <div className="absolute bottom-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded bg-[#e2f0d9]/95 text-[#276a3c] font-black text-[11px] flex items-center gap-1 shadow-sm border border-emerald-300/40">
+                    <ThumbsUp className="w-3 h-3 fill-[#276a3c]" />
+                    <span>{ratingPercent}%</span>
                 </div>
 
-                {/* Top-Right Free / VIP Badge */}
-                <div className="absolute top-2 right-2 z-10">
-                    {isFree ? (
-                        <span className="px-2 py-0.5 rounded bg-emerald-600/90 text-white font-bold text-[10px] uppercase shadow">
-                            ҮНЭГҮЙ
-                        </span>
-                    ) : (
-                        <span className="px-2 py-0.5 rounded bg-amber-500 text-black font-black text-[10px] uppercase shadow flex items-center gap-1">
-                            <Crown className="w-3 h-3 fill-black" /> VIP
-                        </span>
-                    )}
+                {/* Bottom-Right Duration & Quality Overlay */}
+                <div className="absolute bottom-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded bg-black/80 text-white font-mono text-[11px] font-bold flex items-center gap-1">
+                    <span className="text-zinc-300 font-sans text-[10px] font-black">{qualityTag}</span>
+                    <span>{duration}</span>
+                </div>
+            </Link>
+
+            {/* Info Below Thumbnail */}
+            <div className="flex flex-col gap-0.5 px-0.5">
+                {/* Title + 3-dots Menu */}
+                <div className="flex items-start justify-between gap-1">
+                    <Link href={`/videos/${video.id}`} className="font-bold text-[13px] text-zinc-900 hover:text-red-600 transition-colors line-clamp-1 leading-snug">
+                        {video.title}
+                    </Link>
+                    <button className="text-zinc-400 hover:text-zinc-700 p-0.5 flex-shrink-0 cursor-pointer">
+                        <MoreVertical className="w-3.5 h-3.5" />
+                    </button>
                 </div>
 
-                {/* Bottom-Right Duration Badge */}
-                <div className="absolute bottom-2 right-2 z-10 px-2 py-0.5 rounded bg-black/85 backdrop-blur-md border border-white/15 text-[11px] font-mono font-bold text-white tracking-tight">
-                    {duration}
-                </div>
-
-                {/* Play Button Overlay on Hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/35 backdrop-blur-[1px]">
-                    <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl shadow-red-600/50 transform scale-90 group-hover:scale-100 transition-transform duration-300">
-                        <Play className="w-6 h-6 fill-current ml-0.5" />
+                {/* Meta Line: Source site + Checkmark + Upload time */}
+                <div className="flex items-center justify-between text-[11px] text-zinc-500 font-medium">
+                    <div className="flex items-center gap-1 truncate max-w-[130px]">
+                        <CheckCircle2 className="w-3 h-3 text-zinc-400 fill-zinc-200 flex-shrink-0" />
+                        <span className="truncate hover:underline cursor-pointer">{sourceName}</span>
                     </div>
-                </div>
-            </div>
-
-            {/* Video Details */}
-            <div className="flex flex-col gap-1 px-0.5">
-                {/* Title */}
-                <h3 className="text-sm font-bold text-zinc-100 group-hover:text-red-500 transition-colors line-clamp-2 leading-snug tracking-tight">
-                    {video.title}
-                </h3>
-
-                {/* Metadata Line */}
-                <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
-                    <div className="flex items-center gap-1.5">
-                        <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                        <span>{views} үзсэн</span>
-                    </div>
-                    <span>
-                        {video.created_at ? formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: mn }) : 'Саяхан'}
+                    <span className="flex-shrink-0">
+                        {video.created_at ? formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: mn }) : '1 долоо хоногийн өмнө'}
                     </span>
                 </div>
             </div>
-        </Link>
+        </div>
     );
 }
