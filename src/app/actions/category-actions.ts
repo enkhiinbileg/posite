@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 export interface CategoryWithStats {
@@ -16,17 +16,32 @@ export interface CategoryWithStats {
   first_video_thumbnail?: string | null;
 }
 
+const SUPABASE_URL = "https://kcdzmijmghjljjbhcefp.supabase.co";
+const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjZHptaWptZ2hqbGpqYmhjZWZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTA2Nzk5MSwiZXhwIjoyMTAwNjQzOTkxfQ.la-UA331IJNuSCTAYgezOlDulEiu29aUNRMheZeI0vE";
+
+function getAdminClient() {
+  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+}
+
 export async function getCategoriesWithFirstVideoAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
-    const { data: categories, error } = await supabaseAdmin
+    const adminDb = getAdminClient();
+    const { data: categories, error } = await adminDb
       .from('video_categories')
       .select('*')
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
+    if (error) {
+      console.error("getCategoriesWithFirstVideoAction DB error:", error);
+      return { success: false, error: error.message };
+    }
+
     const allCategories = categories || [];
 
-    const { data: videos } = await supabaseAdmin
+    const { data: videos } = await adminDb
       .from('videos')
       .select('id, title, thumbnail_url, views, created_at, is_nsfw, webtoons(id, title, image, genres)');
 
@@ -70,7 +85,8 @@ export async function getCategoriesWithFirstVideoAction(): Promise<{ success: bo
 
 export async function getAllCategoriesAdminAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
-    const { data, error } = await supabaseAdmin
+    const adminDb = getAdminClient();
+    const { data, error } = await adminDb
       .from('video_categories')
       .select('*')
       .order('sort_order', { ascending: true });
@@ -96,8 +112,9 @@ export async function createCategoryAction(data: {
   is_active?: boolean;
 }): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
+    const adminDb = getAdminClient();
     const slug = data.slug || data.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
-    const { data: created, error } = await supabaseAdmin
+    const { data: created, error } = await adminDb
       .from('video_categories')
       .upsert({
         name: data.name,
@@ -124,7 +141,8 @@ export async function createCategoryAction(data: {
 
 export async function updateCategoryAction(id: string, data: Partial<CategoryWithStats>): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    const { data: updated, error } = await supabaseAdmin
+    const adminDb = getAdminClient();
+    const { data: updated, error } = await adminDb
       .from('video_categories')
       .update(data)
       .eq('id', id)
@@ -145,7 +163,8 @@ export async function updateCategoryAction(id: string, data: Partial<CategoryWit
 
 export async function deleteCategoryAction(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabaseAdmin
+    const adminDb = getAdminClient();
+    const { error } = await adminDb
       .from('video_categories')
       .delete()
       .eq('id', id);
