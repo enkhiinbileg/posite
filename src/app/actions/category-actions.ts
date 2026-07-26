@@ -24,7 +24,7 @@ const DEFAULT_CATEGORIES = [
   'Asian Homemade', 'Story', 'Surprise Mom', 'Japanese Hot Mom', 'Massage'
 ];
 
-export async function getCategoriesWithFirstVideoAction() {
+export async function getCategoriesWithFirstVideoAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
     let { data: categories, error } = await supabaseAdmin
       .from('video_categories')
@@ -85,7 +85,7 @@ export async function getCategoriesWithFirstVideoAction() {
   }
 }
 
-export async function getAllCategoriesAdminAction() {
+export async function getAllCategoriesAdminAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
     let { data, error } = await supabaseAdmin
       .from('video_categories')
@@ -117,7 +117,7 @@ export async function createCategoryAction(data: {
   description?: string;
   sort_order?: number;
   is_active?: boolean;
-}) {
+}): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
     const slug = data.slug || data.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
     const { data: created, error } = await supabaseAdmin
@@ -144,7 +144,7 @@ export async function createCategoryAction(data: {
   }
 }
 
-export async function updateCategoryAction(id: string, data: Partial<CategoryWithStats>) {
+export async function updateCategoryAction(id: string, data: Partial<CategoryWithStats>): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
     if (id.startsWith('cat-')) {
       revalidatePath("/videos");
@@ -170,7 +170,7 @@ export async function updateCategoryAction(id: string, data: Partial<CategoryWit
   }
 }
 
-export async function deleteCategoryAction(id: string) {
+export async function deleteCategoryAction(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     if (id.startsWith('cat-')) {
       revalidatePath("/videos");
