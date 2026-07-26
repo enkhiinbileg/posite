@@ -1,0 +1,441 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { getVideosAction, createVideoAction, updateVideoAction, deleteVideoAction } from "@/app/actions/video-actions";
+import { uploadImage } from "@/app/actions/upload-image";
+import { 
+    Plus, Trash2, Edit, Save, X, Loader2, 
+    Image as ImageIcon, Film, DollarSign, Clock, Shield, Ticket
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+export default function AdminVideosPage() {
+    const [videos, setVideos] = useState<any[]>([]);
+    const [webtoons, setWebtoons] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [editingId, setEditingId] = useState<string | null>(null);
+
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        thumbnail_url: '',
+        video_url: '',
+        duration: '0:00',
+        price_purchase: 5000,
+        price_rental: 1500,
+        rental_duration_hours: 24,
+        is_free: false,
+        is_nsfw: false,
+        webtoon_id: '',
+        order_index: 0
+    });
+
+    const formatDuration = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    useEffect(() => {
+        fetchVideos();
+        fetchWebtoons();
+    }, []);
+
+    async function fetchVideos() {
+        const res = await getVideosAction();
+        if (res.success) setVideos(res.data || []);
+        setLoading(false);
+    }
+
+    async function fetchWebtoons() {
+        const { getWebtoonsAction } = await import("@/app/actions/webtoon-actions");
+        const res = await getWebtoonsAction();
+        if (res.success) setWebtoons(res.data || []);
+    }
+
+
+    const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Auto-detect duration
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+            window.URL.revokeObjectURL(video.src);
+            const detectedDuration = formatDuration(video.duration);
+            setFormData(prev => ({ ...prev, duration: detectedDuration }));
+        };
+        video.src = URL.createObjectURL(file);
+
+        try {
+            const { getPresignedUrl } = await import("@/lib/r2");
+
+            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            const filePath = `videos/${fileName}`;
+
+            const res = await getPresignedUrl(filePath, file.type);
+            if (!res.success || !res.url) throw new Error(res.error || "URL үүсгэхэд алдаа гарлаа");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', res.url);
+            xhr.setRequestHeader('Content-Type', file.type);
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                    setUploadProgress(percentComplete);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    setFormData({ ...formData, video_url: res.publicUrl! });
+                    toast.success("Бичлэг амжилттай хуулагдлаа");
+                    setUploadProgress(0);
+                } else {
+                    toast.error("Хуулахад алдаа гарлаа");
+                    setUploadProgress(0);
+                }
+            };
+
+            xhr.onerror = () => {
+                toast.error("Сүлжээний алдаа гарлаа");
+                setUploadProgress(0);
+            };
+
+            xhr.send(file);
+        } catch (error: any) {
+            toast.error(error.message);
+            setUploadProgress(0);
+        }
+    };
+
+    const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('bucketPath', 'videos/thumbnails');
+
+        toast.promise(uploadImage(uploadData), {
+            loading: 'Зураг хуулж байна...',
+            success: (res: any) => {
+                if (res.success) {
+                    setFormData({ ...formData, thumbnail_url: res.url });
+                    return 'Зураг амжилттай хуулагдлаа';
+                }
+                throw new Error(res.error);
+            },
+            error: 'Хуулахад алдаа гарлаа'
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSaving(true);
+        const payload = {
+            ...formData,
+            webtoon_id: formData.webtoon_id || null
+        };
+        
+        const res = editingId 
+            ? await updateVideoAction(editingId, payload)
+            : await createVideoAction(payload);
+
+        if (res.success) {
+            toast.success(editingId ? "Бичлэг амжилттай шинэчлэгдлээ" : "Бичлэг амжилттай нэмэгдлээ");
+            setShowForm(false);
+            setEditingId(null);
+            setFormData({
+                title: '', description: '', thumbnail_url: '', video_url: '', duration: '0:00',
+                price_purchase: 5000, price_rental: 1500, rental_duration_hours: 24,
+                is_free: false, is_nsfw: false, webtoon_id: '', order_index: 0
+            });
+            fetchVideos();
+        } else {
+            toast.error(res.error);
+        }
+        setIsSaving(false);
+    };
+
+    const handleEdit = (video: any) => {
+        setEditingId(video.id);
+        setFormData({
+            title: video.title || '',
+            description: video.description || '',
+            thumbnail_url: video.thumbnail_url || '',
+            video_url: video.video_url || '',
+            duration: video.duration || '0:00',
+            price_purchase: video.price_purchase || 5000,
+            price_rental: video.price_rental || 1500,
+            rental_duration_hours: video.rental_duration_hours || 24,
+            is_free: video.is_free || false,
+            is_nsfw: video.is_nsfw || false,
+            webtoon_id: video.webtoon_id?.toString() || '',
+            order_index: video.order_index || 0
+        });
+        setShowForm(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Та энэ видеог устгахдаа итгэлтэй байна уу?")) return;
+        const res = await deleteVideoAction(id);
+        if (res.success) {
+            toast.success("Видео устгагдлаа");
+            fetchVideos();
+        } else {
+            toast.error(res.error);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#050505] p-8">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center justify-between mb-12">
+                    <div>
+                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Видео <span className="text-primary">Удирдлага</span></h1>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-2">Бичлэг нэмэх, засах, устгах хэсэг</p>
+                    </div>
+                    <button 
+                        onClick={() => setShowForm(true)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-white font-black uppercase text-xs tracking-widest transition-all hover:scale-105 active:scale-95"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Шинэ видео
+                    </button>
+                </div>
+
+                {showForm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+                        <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-8 max-h-[90vh] overflow-y-auto no-scrollbar relative shadow-2xl">
+                            <button onClick={() => {
+                                setShowForm(false);
+                                setEditingId(null);
+                                setFormData({
+                                    title: '', description: '', thumbnail_url: '', video_url: '', duration: '0:00',
+                                    price_purchase: 5000, price_rental: 1500, rental_duration_hours: 24,
+                                    is_free: false, is_nsfw: false, webtoon_id: '', order_index: 0
+                                });
+                            }} className="absolute top-6 right-6 p-2 text-zinc-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-8">
+                                {editingId ? "Бичлэг засах" : "Шинэ видео нэмэх"}
+                            </h2>
+                            
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Гарчиг</label>
+                                        <input 
+                                            required
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all"
+                                            placeholder="Видеоны гарчиг..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Thumbnail Зураг</label>
+                                        <div className="flex gap-4">
+                                            <input 
+                                                value={formData.thumbnail_url}
+                                                onChange={(e) => setFormData({...formData, thumbnail_url: e.target.value})}
+                                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all text-xs"
+                                                placeholder="URL эсвэл файл хуулах"
+                                            />
+                                            <label className="cursor-pointer p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                                                <ImageIcon className="w-5 h-5 text-zinc-400" />
+                                                <input type="file" className="hidden" accept="image/*" onChange={handleThumbnailUpload} />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                                            <span>Бичлэгийн URL</span>
+                                            {uploadProgress > 0 && (
+                                                <span className="text-primary font-black animate-pulse flex items-center gap-2">
+                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ХУУЛЖ БАЙНА: {uploadProgress}%
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="flex gap-4 relative">
+                                            <input 
+                                                required
+                                                value={formData.video_url}
+                                                onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all text-xs"
+                                                placeholder="YouTube линк эсвэл файл хуулах"
+                                            />
+                                            <label className={cn(
+                                                "cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-center relative overflow-hidden",
+                                                uploadProgress > 0 
+                                                    ? "bg-primary/20 border-primary/40 pointer-events-none" 
+                                                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                                            )}>
+                                                <Film className={cn("w-5 h-5 text-zinc-400", uploadProgress > 0 && "text-primary animate-bounce")} />
+                                                <input type="file" className="hidden" accept="video/*" onChange={handleVideoUpload} />
+                                                
+                                                {/* Circular Progress Background for the icon button */}
+                                                {uploadProgress > 0 && (
+                                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                                        <div className="absolute inset-0 border-2 border-primary border-t-transparent animate-spin" />
+                                                    </div>
+                                                )}
+                                            </label>
+                                        </div>
+                                        
+                                        {/* Prominent Progress Bar */}
+                                        {uploadProgress > 0 && (
+                                            <div className="mt-3 space-y-2">
+                                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                                    <div 
+                                                        className="h-full bg-gradient-to-right from-primary to-rose-400 transition-all duration-300 relative" 
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    >
+                                                        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[shimmer_1s_linear_infinite]" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center px-1">
+                                                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Upload in progress...</p>
+                                                    <p className="text-[11px] font-black text-primary uppercase">{uploadProgress}%</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Холбогдох вэбтүүн</label>
+                                        <select
+                                            value={formData.webtoon_id}
+                                            onChange={(e) => setFormData({...formData, webtoon_id: e.target.value})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all appearance-none"
+                                        >
+                                            <option value="">Сонгох...</option>
+                                            {webtoons.map((w) => (
+                                                <option key={w.id} value={w.id} className="bg-[#0f0f0f]">{w.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Тайлбар</label>
+                                    <textarea 
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all h-24 resize-none"
+                                        placeholder="Видеоны дэлгэрэнгүй..."
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Ticket className="w-3 h-3"/> Түрээслэх үнэ</label>
+                                        <input 
+                                            type="number"
+                                            value={formData.price_rental || 0}
+                                            onChange={(e) => setFormData({...formData, price_rental: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Clock className="w-3 h-3"/> Түрээслэх цаг</label>
+                                        <input 
+                                            type="number"
+                                            value={formData.rental_duration_hours || 0}
+                                            onChange={(e) => setFormData({...formData, rental_duration_hours: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Clock className="w-3 h-3"/> Дараалал (1, 2...)</label>
+                                        <input 
+                                            type="number"
+                                            value={formData.order_index || 0}
+                                            onChange={(e) => setFormData({...formData, order_index: parseInt(e.target.value) || 0})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-8 pt-4">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={formData.is_free} 
+                                            onChange={(e) => setFormData({...formData, is_free: e.target.checked})}
+                                            className="w-5 h-5 rounded-lg border-white/10 bg-white/5 accent-primary"
+                                        />
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-white transition-colors">Үнэгүй бичлэг</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={formData.is_nsfw} 
+                                            onChange={(e) => setFormData({...formData, is_nsfw: e.target.checked})}
+                                            className="w-5 h-5 rounded-lg border-white/10 bg-white/5 accent-primary"
+                                        />
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-white transition-colors flex items-center gap-2"><Shield className="w-3 h-3"/> 18+ Контент</span>
+                                    </label>
+                                </div>
+
+                                <button 
+                                    disabled={isSaving}
+                                    className="w-full py-5 rounded-2xl bg-primary text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                >
+                                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                    Бичлэгийг хадгалах
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loading ? (
+                        <div className="col-span-full flex justify-center py-20"><Loader2 className="w-10 h-10 text-primary animate-spin" /></div>
+                    ) : videos.map((video) => (
+                        <div key={video.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 group">
+                            <div className="relative aspect-video rounded-2xl overflow-hidden mb-4">
+                                <img src={video.thumbnail_url} className="w-full h-full object-cover" alt="" />
+                                {video.is_free && <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-500 rounded-md text-[8px] font-black text-white uppercase">Үнэгүй</div>}
+                                {video.is_nsfw && <div className="absolute top-3 right-3 px-2 py-1 bg-rose-500 rounded-md text-[8px] font-black text-white uppercase">18+</div>}
+                            </div>
+                            <h3 className="text-sm font-black text-white uppercase tracking-tight line-clamp-1 mb-2">{video.title}</h3>
+                            <div className="flex items-center justify-between text-zinc-500 text-[10px] font-bold mb-6">
+                                <div className="flex flex-col">
+                                    <span>{video.price_rental}₮ / {video.price_purchase}₮</span>
+                                    <span className="text-zinc-500 mt-1 uppercase text-[9px] tracking-widest font-black">Video Status</span>
+                                </div>
+                                <span className="text-right">{new Date(video.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={() => handleEdit(video)}
+                                    className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-black uppercase text-[10px] tracking-widest transition-all"
+                                >
+                                    Засах
+                                </button>
+                                <button 
+                                    onClick={() => handleDelete(video.id)}
+                                    className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}

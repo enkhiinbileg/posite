@@ -1,0 +1,60 @@
+/* Dark Mode Tabs for ImageTrans */
+.tab {
+  display: flex !important;
+  gap: 8px !important;
+  background-color: transparent !important;
+  border: none !important;
+  margin-bottom: 20px !important;
+  padding: 4px !important;
+  background: var(--surface) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+}
+
+.tab button {
+  flex: 1 !important;
+  background-color: transparent !important;
+  color: var(--text-muted) !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 10px !important;
+  letter-spacing: 1px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.tab button:hover {
+  color: var(--text) !important;
+  background-color: var(--white-opacity-5, rgba(255, 255, 255, 0.05)) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.tab button.active {
+  background-color: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3) !important;
+}
+
+.tabcontent {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 24px !important;
+  padding: 30px !important;
+  animation: fadeIn 0.4s ease-out !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

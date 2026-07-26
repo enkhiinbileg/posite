@@ -1,0 +1,155 @@
+/* Global Theme Overrides for ImageTrans */
+:root {
+    --primary: #e11d48;
+    --primary-hover: #be123c;
+    --background: #050505;
+    --surface: #121212;
+    --surface-hover: #1a1a1a;
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #ffffff;
+    --text-muted: #a1a1aa;
+}
+
+body {
+    background-color: var(--background) !important;
+    color: var(--text) !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+p,
+div,
+span,
+label {
+    color: var(--text) !important;
+}
+
+/* Form Elements */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    border-radius: 12px !important;
+    padding: 10px 15px !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+    font-weight: 500 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.1) !important;
+}
+
+button {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 10px 20px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    font-size: 11px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.2) !important;
+}
+
+button:hover {
+    background-color: var(--primary-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.3) !important;
+}
+
+button:active {
+    transform: translateY(0) !important;
+}
+
+/* Specific UI Layouts */
+.row {
+    margin-bottom: 30px !important;
+}
+
+#srcContainer,
+#tgtContainer {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 24px !important;
+    padding: 24px !important;
+    margin-top: 10px !important;
+    min-height: 200px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+#srcContainer div:first-child,
+#tgtContainer div:first-child {
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    font-size: 10px !important;
+    letter-spacing: 2px !important;
+    color: var(--primary) !important;
+    margin-bottom: 15px !important;
+}
+
+.img-container img {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.textbox {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    /* Keep white for readability of translation boxes */
+    color: black !important;
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    padding: 2px 4px !important;
+}
+
+.langselect {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+.ta {
+    width: 100% !important;
+    height: 300px !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 13px !important;
+}
+
+#status {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    color: var(--primary) !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    padding: 20px !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 100 !important;
+}

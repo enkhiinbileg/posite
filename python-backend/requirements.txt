@@ -1,0 +1,10 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart==0.0.6
+aiofiles==23.2.1
+# The core library for translation (Install via git is recommended for latest updates)
+# manga-image-translator @ git+https://github.com/zhongyang219/manga-image-translator.git
+numpy
+opencv-python
+pillow
+torch --index-url https://download.pytorch.org/whl/cu118

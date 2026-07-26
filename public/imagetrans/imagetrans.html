@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>ImageTrans Online</title>
+	<script type="text/javascript" src="tabs.js"></script>
+	<script type="text/javascript" src="spark-md5.min.js"></script>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+	<link rel="stylesheet" href="css/user.css">
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/tabs.css">
+	<style type="text/css">
+		.ta {
+			width: 300px;
+			height: 350px;
+		}
+	</style>
+	<script type="text/javascript">
+		function update() {
+			var ta = document.getElementById("params");
+			var params = JSON.parse(ta.value);
+			var colorType = getSelectedRadio("colortype");
+			var imageType = getSelectedRadio("imagetype");
+			var fastmode = true;
+			var fastmodeChk = document.getElementById("fastmodechk");
+			var jachk = document.getElementById("jachk");
+			if (jachk.checked == true) {
+				fastmodeChk.checked = false;
+			}
+			if (colorType == "blackwhite") {
+				params["otsu_enabled"] = false;
+			} else {
+				params["otsu_enabled"] = true;
+			}
+			if (fastmodeChk.checked == true) {
+				params["ocrengine"] = "google";
+				params["mtengine"] = "colorfulclouds";
+				params["detection_method"] = "OCR";
+				params["precision_mode"] = false;
+			}
+			else {
+				if (imageType == "normal") {
+					params["detection_method"] = "heuristic";
+					if (jachk.checked == true) {
+						params["source"] = "ja";
+						params["ocrengine"] = "tesseract";
+						params["ocrlang"] = "jpn_vert";
+						params["remove_space"] = true;
+						params["stripfurigana"] = true;
+						params["maximumHeight"] = 55;
+						params["overlapped_height_percent"] = 85;
+						params["textLocalizationProcess"] = ["纵向合并", "横向合并", "过滤过小项", "去除内部区域", "拓展区域"];
+					}
+					else {
+						params["ocrengine"] = "baidu_accurate";
+						params["ocrlang"] = "auto";
+					}
+				} else if (imageType == "print") {
+					params["detection_method"] = "OCR";
+					params["ocrengine"] = "tesseract";
+					params["ocrlang"] = "chi_sim+eng";
+				} else if (imageType == "complex") {
+					params["detection_method"] = "OCR";
+					params["ocrengine"] = "google";
+					params["ocrlang"] = "auto";
+				}
+			}
+			var result = JSON.stringify(params, null, 4);
+			ta.value = result;
+			//alert(getSelectedRadio("colortype"));
+			//alert(getSelectedRadio("imagetype"));
+		}
+
+		function getSelectedRadio(name) {
+			var radios = document.getElementsByName(name)
+			for (i = 0; i < radios.length; i++) {
+				var r = radios[i];
+				if (r.checked == true) {
+					return r.value;
+				}
+			}
+		}
+
+		function onFileChosen(event) {
+			showLocalImage(event);
+		}
+
+		function showLocalImage(event) {
+			var file = event.target.files[0],
+				thisType = file.type,
+				thisSize = file.size,
+				reader = new FileReader();
+
+			reader.onload = function (e) {
+				appendSrcImg(e.target.result);
+			};
+
+			reader.onerror = function () {
+				console.warn('oops, something went wrong.');
+			};
+
+			reader.readAsDataURL(file);
+		}
+
+		function appendSrcImg(data) {
+			if (fileOverSize(data) == true) {
+				alert("File oversize (>3MB).");
+			} else {
+				var srcContainer = document.getElementById("srcContainer");
+				var tgtContainer = document.getElementById("tgtContainer");
+				clearElements(srcContainer, "img");
+				clearElements(tgtContainer, "img");
+				img = document.createElement("img");
+				img.src = data;
+				img.style = "max-width:100%"
+				srcContainer.append(img);
+			}
+
+		}
+
+		function clearElements(parent, tagName) {
+			var elements = parent.getElementsByTagName(tagName);
+			while (elements.length > 0) {
+				var ele = elements[0];
+				ele.remove();
+			}
+		}
+
+
+		function uploadImg() {
+			updateLangsParams();
+			var status = document.getElementById("status");
+
+			if (status.innerText != "") {
+				alert("Please wait.");
+				return
+			}
+
+			var detectonly = document.getElementById("detectonly");
+			var useprevious = document.getElementById("useprevious");
+			if (detectonly.checked) {
+				detectonly = "true";
+			} else {
+				detectonly = "false";
+			}
+			if (useprevious.checked) {
+				useprevious = "true";
+			} else {
+				useprevious = "false";
+			}
+			var srcContainer = document.getElementById("srcContainer");
+			if (srcContainer.getElementsByTagName("img").length == 0) {
+				alert("Please load an image first.");
+				return
+			}
+			var filename;
+			var methodselect = document.getElementById("methodselect");
+			if (methodselect.value == "localfile") {
+				const file = document.getElementById('imgfile')
+				filename = file.files[0].name;
+			} else {
+				var url = srcContainer.getElementsByTagName("img")[0].src;
+				var computedHash = SparkMD5.hash(url);
+				filename = computedHash + ".jpg";
+			}
+
+			status.innerText = "Loading..."
+			var tgtContainer = document.getElementById("tgtContainer");
+			clearElements(tgtContainer, "img");
+
+
+			var srcContainer = document.getElementById("srcContainer");
+
+			var img = srcContainer.getElementsByTagName("img")[0];
+			var data = img.src;
+			var ta = document.getElementById("params");
+			var ajaxObj = new XMLHttpRequest();
+
+			const payload = {
+				"returntype": "base64",
+				"data": data,
+				"filename": filename,
+				"useprevious": useprevious,
+				"detectonly": detectonly,
+				"config": ta.value
+			};
+			ajaxObj.open('POST', 'translate');
+			ajaxObj.setRequestHeader('Content-Type', 'application/json');
+			// send rquest with JSON payload
+			ajaxObj.send(JSON.stringify(payload));
+			ajaxObj.onreadystatechange = function () {
+				status.innerText = "";
+				if (ajaxObj.readyState == 4 && ajaxObj.status == 200) {
+					try {
+						var jsonobject = JSON.parse(ajaxObj.responseText);
+						img = document.createElement("img");
+						img.src = "data:image/jpeg;base64," + jsonobject["data"];
+						img.style = "max-width:100%";
+						tgtContainer.append(img);
+					} catch (error) {
+						alert(ajaxObj.responseText);
+					}
+				}
+			}
+			ajaxObj.onerror = function () {
+				window.open("translate");
+			}
+		}
+
+		function methodChanged(value) {
+			var local = document.getElementById("local");
+			var remote = document.getElementById("remote");
+			if (value == "localfile") {
+				local.style = "";
+				remote.style = "display:none";
+			} else {
+				local.style = "display:none";
+				remote.style = "";
+			}
+		}
+
+		function loadRemoteImg() {
+			console.log("loading remote img")
+			var method = document.getElementById("methodselect").value;
+			console.log(method);
+			var url = document.getElementById("imgurl").value;
+
+			if (method == "remoteurl_server") {
+				alert("Downloading the image with server, please wait.");
+				var ajaxObj = new XMLHttpRequest();
+				ajaxObj.open('GET', 'image2base64?url=' + url);
+				ajaxObj.send(null);
+				ajaxObj.onreadystatechange = function () {
+					if (ajaxObj.readyState == 4 && ajaxObj.status == 200) {
+						var jsonobject = JSON.parse(ajaxObj.responseText);
+						appendSrcImg("data:image/jpeg;base64," + jsonobject["data"]);
+					}
+				}
+				ajaxObj.onerror = function () {
+					console.log("error");
+				}
+			} else {
+				var canvas = document.createElement("canvas")
+				ctx = canvas.getContext('2d')
+				var img = new Image();
+				img.crossOrigin = 'anonymous';
+				img.onload = function () {
+					canvas.height = img.height;
+					canvas.width = img.width;
+					ctx.drawImage(img, 0, 0);
+					var dataURL = canvas.toDataURL('image/jpeg');
+					appendSrcImg(dataURL);
+					canvas = null;
+				};
+				img.src = url;
+			}
+		}
+
+		function langSelected(isSource, value) {
+			var langInput;
+			if (isSource == true) {
+				langInput = document.getElementById("srcLang");
+			} else {
+				langInput = document.getElementById("tgtLang");
+			}
+			if (value == "custom") {
+				langInput.disabled = false;
+			} else {
+				langInput.disabled = true;
+				langInput.value = value;
+				updateLangsParams();
+			}
+		}
+
+		function updateLangsParams() {
+			var ta = document.getElementById("params");
+			var params = JSON.parse(ta.value);
+			params["source"] = document.getElementById("srcLang").value;
+			params["target"] = document.getElementById("tgtLang").value;
+			var result = JSON.stringify(params, null, 4);
+			ta.value = result;
+		}
+
+		function fileOverSize(base64) {
+			var strLen = base64.length;
+			var fileSize = strLen - (strLen / 8) * 2; //in byte
+			if (fileSize > 3 * 1024 * 1024) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+	</script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="tab" style="display:flex;overflow-x:auto">
+				<button class="tablinks" onclick="switchTab(event, 'uploader')">Зураг Оруулах</button>
+				<button class="tablinks" onclick="switchTab(event, 'paramshelper')">Тохиргоо</button>
+				<button class="tablinks" onclick="switchTab(event, 'fullparams')">JSON Тохиргоо</button>
+			</div>
+			<div id="uploader" class="tabcontent">
+				<select size="1" id="methodselect" onchange="methodChanged(this.value)">
+					<option value="localfile">Дотоод файл</option>
+					<option value="remoteurl_server">Линкээр (Сервер)</option>
+					<option value="remoteurl">Линкээр (Шууд)</option>
+				</select>
+				<span id="local">
+					Зураг сонгох: <input id="imgfile" type="file" name="image" onchange="onFileChosen(event)" />
+				</span>
+				<span id="remote" style="display:none">
+					<input type="text" id="imgurl" value="" placeholder="http://" />
+					<button onclick="loadRemoteImg()">УНШИХ</button>
+				</span>
+				<button onclick="uploadImg()">ОРЧУУЛАХ</button>
+				<div id="langselector">
+					<div class="langselect">
+						Эх хэл:
+						<select size="1" onchange="langSelected(true,this.value)">
+							<option value="auto">Автомат</option>
+							<option value="zh">Хятад</option>
+							<option value="ja">Япон</option>
+							<option value="ko">Солонгос</option>
+							<option value="en">Англи</option>
+							<option value="fr">Франц</option>
+							<option value="de">Герман</option>
+							<option value="it">Итали</option>
+							<option value="es">Испани</option>
+							<option value="ar">Араб</option>
+							<option value="ru">Орос</option>
+							<option value="custom">Бусад</option>
+						</select>
+
+						<input type="text" id="srcLang" value="auto" disabled />
+					</div>
+					<div class="langselect">
+						Орчуулах:
+						<select size="1" onchange="langSelected(false,this.value)">
+							<option value="en">Англи</option>
+							<option value="fr">Франц</option>
+							<option value="zh">Хятад</option>
+							<option value="ja">Япон</option>
+							<option value="ko">Солонгос</option>
+							<option value="de">Герман</option>
+							<option value="it">Итали</option>
+							<option value="es">Испани</option>
+							<option value="ar">Араб</option>
+							<option value="ru">Орос</option>
+							<option value="custom">Бусад</option>
+						</select>
+						<input type="text" id="tgtLang" value="en" disabled />
+					</div>
+				</div>
+
+			</div>
+			<div id="paramshelper" class="tabcontent">
+				Зөвхөн текст илрүүлэх: <input type="checkbox" id="detectonly" name="detectonly"><br />
+				Өмнөх өгөгдлийг ашиглах: <input type="checkbox" id="useprevious" name="useprevious" checked>
+				<p>Зургийн төрлөөс хамааран тохиргоог өөрчлөх боломжтой. Өөрчлөлт хийсний дараа 'Шинэчлэх' товчийг дарна
+					уу.</p>
+				<button type="button" onclick="update()">Хадгалах</button>
+				<p>Хурдан горим: <input type="checkbox" name="fastmode" id="fastmodechk" checked> (Хязгаарлагдмал хэлний
+					дэмжлэгтэй)</p>
+				<div id="colortyperadios">
+					<p>Өнгөний төрөл:</p>
+					<p><input type="radio" name="colortype" value="blackwhite">Хар/Цагаан</p>
+					<p><input type="radio" name="colortype" value="color" checked>Өнгөтэй</p>
+				</div>
+
+				<div id="imagetyperadio">
+					<p>Зургийн төрөл:</p>
+					<p><input type="radio" name="imagetype" value="normal" checked>Ердийн (Комик)</p>
+					<p><input type="radio" name="imagetype" value="print">Хэвлэмэл (Ном)</p>
+					<p><input type="radio" name="imagetype" value="complex">Нийлмэл (Скриншот)</p>
+				</div>
+				<p>Манга (Япон хэл): <input type="checkbox" name="japanese" id="jachk"></p>
+			</div>
+			<div id="fullparams" class="tabcontent">
+				<textarea id="params" class="ta" name="config">
+{
+	"resize": true,
+	"vertical_merge_for_OCR": true,
+	"horizontal_merge_for_OCR": true,
+	"auto_clean": true,
+	"blur": false,
+	"otsu_enabled": true,
+	"mtengine": "tencent",
+	"remove_space": false,
+	"detection_method": "OCR",
+	"minimumHeight": 3,
+	"addBorder": false,
+	"reorder": false,
+	"stripfurigana": false,
+	"threshold": 200,
+	"use_puretext": false,
+	"source": "auto",
+	"minimumHSpan": 15,
+	"target": "en",
+	"ocrlang": "auto",
+	"mt_interval": 200,
+	"precision_mode": true,
+	"ocr_interval": 200,
+	"maximumHeight": 100,
+	"chinese_punctuation": false,
+	"ocrengine": "baidu_accurate",
+	"autoThreshold": true,
+	"minimumVSpan": 15,
+	"overlapped_width_percent": 50,	
+	"overlapped_height_percent": 70,
+	"dilation": 2,
+	"expanding_pix": 5,
+	"fontStyles": [
+			{
+				"b4jfont": "System",
+				"line-height": 1.25,
+				"bold": false,
+				"fontname": "Arial",
+				"italic": false,
+				"shadowRadius": 2,
+				"bgcolor": "255,255,255",
+				"size": 15,
+				"name": "Text",
+				"fontcolor": "0,0,0",
+				"alignment": 1,
+				"wrap": true,
+				"shadowColor": "255,255,255,1",
+				"direction": 0
+			}
+		]	
+}</textarea>
+			</div>
+		</div>
+		<div class="row">
+			<div id="tgtContainer">
+				<div>Орчуулга:</div>
+				<div id="status"></div>
+			</div>
+
+		</div>
+		<div class="row">
+			<div id="srcContainer">
+				<div>Эх сурвалж:</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		switchTab(null, 'uploader');
+	</script>
+</body>
+
+</html>

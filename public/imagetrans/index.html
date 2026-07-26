@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>ImageTrans Online</title>
+	<script type="text/javascript" src="tabs.js"></script>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+	<script type="text/javascript" src="spark-md5.min.js"></script>	
+	<link rel="stylesheet" href="css/user.css">
+	<link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/tabs.css">
+	<style type="text/css">
+		.img-container{
+		    position:relative;
+		}
+		
+		.textbox{
+		    position:absolute;
+			background-color: white;
+		}
+	</style>
+	<script type="text/javascript">
+	function onFileChosen(event){
+		showLocalImage(event);
+	}
+	
+	function showLocalImage(event){			
+		var file = event.target.files[0],
+			thisType = file.type,
+			thisSize = file.size,
+			reader = new FileReader();		
+				
+		reader.onload = function(e){
+		    appendSrcImg(e.target.result);
+		};
+		
+		reader.onerror = function () {
+			console.warn('oops, something went wrong.');
+		};
+		
+		reader.readAsDataURL(file);	
+	}
+	
+	function appendSrcImg(data){
+	    if (fileOverSize(data)==true){
+		    alert("File oversize (>3MB).");
+		} else {
+			var srcContainer =document.getElementById("srcContainer");
+			var tgtContainer = document.getElementById("tgtContainer");	
+			clearElements(srcContainer,"img");
+			clearElements(tgtContainer,"img");
+			var overlayContainer = document.getElementById("overlay");
+		    clearElements(overlayContainer,"div");
+			img = document.createElement("img");
+			img.src = data;
+			img.style = "width:100%"
+			srcContainer.append(img);
+		}
+
+	}
+	
+	function clearElements(parent,tagName){
+	    var elements=parent.getElementsByTagName(tagName);
+		while (elements.length>0){
+		    var ele=elements[0];
+			ele.remove();
+		}
+	}
+	
+	
+	function uploadImg() {
+	    var status=document.getElementById("status");
+		
+		if (status.innerText!=""){
+		    alert("Please wait.");
+		    return
+		}
+		
+
+		var srcContainer = document.getElementById("srcContainer");
+		if (srcContainer.getElementsByTagName("img").length==0){
+		    alert("Please load an image first.");
+		    return
+		}
+		var filename;
+		var methodselect = document.getElementById("methodselect");
+		if (methodselect.value=="localfile"){
+		    const file = document.getElementById('imgfile')
+		    filename = file.files[0].name; 
+		}else {
+			var url = srcContainer.getElementsByTagName("img")[0].src;
+			var computedHash = SparkMD5.hash(url); 
+			filename = computedHash+".jpg";
+		}
+		
+        status.innerText="Loading..."
+		var tgtContainer = document.getElementById("tgtContainer");
+		var overlayContainer = document.getElementById("overlay");
+		clearElements(tgtContainer,"img");
+		clearElements(overlayContainer,"div");
+				
+		var srcContainer = document.getElementById("srcContainer");
+		
+		var img = srcContainer.getElementsByTagName("img")[0];
+		var data = img.src;		
+        var base64_data = data.substring(data.indexOf(",")+1,data.length);
+		
+		var appid=document.getElementById("appid").value;
+		var key=document.getElementById("key").value;
+		if (key==""){
+		    alert("Key is empty.");
+		}
+		var engine=document.getElementById("ocrselect").value;
+		var ajaxObj = new XMLHttpRequest();
+		const params = {
+			"img": base64_data,
+			"engine": engine,
+			"lang": "auto",
+			"key": key,
+			"appid": appid
+		};
+		console.log(params);
+		
+		ajaxObj.open('POST', 'ocr');
+		ajaxObj.setRequestHeader('Content-Type', 'application/json');
+		ajaxObj.send(JSON.stringify(params));
+		ajaxObj.onreadystatechange = function () {
+			status.innerText="";
+			if (ajaxObj.readyState == 4 && ajaxObj.status == 200) {
+				try {
+					var jsonobject = JSON.parse(ajaxObj.responseText);
+					console.log(jsonobject);
+					img = document.createElement("img");
+					img.src = data;
+					img.style = "width:100%";
+					tgtContainer.append(img);
+					overlayTextBoxes(jsonobject["boxes"],img)
+				} catch (error) {
+					alert(ajaxObj.responseText);
+				}			
+			}
+		}
+		ajaxObj.onerror = function () {
+			console.log("error");
+		}
+	}		
+	
+	function overlayTextBoxes(boxes,img,container){
+	    var imgHeight=img.naturalHeight;
+		var imgWidth=img.naturalWidth;
+		var overlayContainer = document.getElementById("overlay");
+		var fontsize = document.getElementById("fontsize").value;
+		var removeSpaces = document.getElementById("removeSpaces").checked;
+		var removeLineBreaks = document.getElementById("removeLineBreaks").checked;
+	    for (i=0;i<boxes.length;i++){
+		    var box = boxes[i];
+			boxdiv = document.createElement("div");
+			boxdiv.className="textbox";		
+			var text = box["text"];
+			console.log(text);
+			if (removeLineBreaks==true){
+			    text=text.replace(/\n/g," ");
+				console.log("remove breaks");
+			}
+			if (removeSpaces==true){
+			    text=text.replace(/ /g,"");
+			}
+			console.log(text);
+            boxdiv.innerText=text;			
+			boxdiv.style.left = box["x0"]/imgWidth*100 + "%";
+			boxdiv.style.top = box["y0"]/imgHeight*100 + "%";
+			boxdiv.style.minWidth = (box["x1"]-box["x0"])/imgWidth*100 + "%";
+			boxdiv.style.width = "min-content";
+			boxdiv.style.minHeight = (box["y2"]-box["y0"])/imgHeight*100 + "%";
+			boxdiv.style.height = "fit-content";
+			boxdiv.style.fontSize = fontsize;
+			boxdiv.contentEditable="true";
+		    overlayContainer.append(boxdiv);
+		}
+	}
+	
+	function translateBoxes(){
+	    var overlayContainer = document.getElementById("overlay");
+		var boxes = overlayContainer.getElementsByClassName("textbox");
+		if (boxes.length==0){
+		    alert("No box to translate.");
+			return
+		}
+		var status=document.getElementById("status");
+		
+		if (status.innerText!=""){
+		    alert("Please wait.");
+		    return
+		}
+		status.innerText="Loading..."
+		var textList=[];
+		for (i=0;i<boxes.length;i++){
+		    var box = boxes[i];
+			textList.push(box.innerText);
+		}
+		var appid=document.getElementById("mtappid").value;
+		var key=document.getElementById("mtkey").value;
+		if (key==""){
+		    console.log("Key is empty.");
+		}
+		var engine=document.getElementById("mtselect").value;
+		var src=document.getElementById("srcLang").value;
+		var tgt=document.getElementById("tgtLang").value;
+		var ajaxObj = new XMLHttpRequest();
+		const params = {
+			"text": textList,
+			"engine": engine,
+			"src": src,
+			"tgt": tgt,
+			"key": key,
+			"appid": appid
+		};
+		console.log(params);
+		ajaxObj.open('POST', 'mt');
+		ajaxObj.setRequestHeader('Content-Type', 'application/json');
+		ajaxObj.send(JSON.stringify(params));
+		ajaxObj.onreadystatechange = function () {
+			status.innerText="";
+			if (ajaxObj.readyState == 4 && ajaxObj.status == 200) {
+				try {
+					var jsonobject = JSON.parse(ajaxObj.responseText);
+					console.log(jsonobject);
+					fillTranslations(boxes,jsonobject)
+				} catch (error) {
+					alert(ajaxObj.responseText);
+				}			
+			}
+		}
+		ajaxObj.onerror = function () {
+			console.log("error");
+		}
+	}
+	
+	function fillTranslations(boxes,translations){
+		for (i=0;i<boxes.length;i++){
+		    var box = boxes[i];
+			box.innerText=translations[i];
+		}
+	}
+	
+	function methodChanged(value){
+		var local=document.getElementById("local");
+		var remote=document.getElementById("remote");
+		if (value=="localfile"){
+		    local.style="";
+			remote.style="display:none";
+		}else{
+		    local.style="display:none";
+			remote.style="";
+		}
+	}
+		
+	function loadRemoteImg(){
+	    console.log("loading remote img")
+		var method=document.getElementById("methodselect").value;
+		console.log(method);
+		var url=document.getElementById("imgurl").value;
+		
+		if (method=="remoteurl_server"){
+		    alert("Downloading the image with server, please wait.");
+			var ajaxObj = new XMLHttpRequest();
+			ajaxObj.open('GET', 'image2base64?url='+url);
+			ajaxObj.send(null);
+			ajaxObj.onreadystatechange = function () {
+				if (ajaxObj.readyState == 4 && ajaxObj.status == 200) {
+				    var jsonobject = JSON.parse(ajaxObj.responseText);
+					appendSrcImg("data:image/jpeg;base64,"+jsonobject["data"]);	
+				}
+			}
+			ajaxObj.onerror = function () {
+				console.log("error");
+			}
+		} else{
+			var canvas = document.createElement("canvas")  
+			ctx = canvas.getContext('2d')
+			var img = new Image();
+			img.crossOrigin ='anonymous';
+			img.onload = function() {
+				canvas.height = img.height;
+				canvas.width = img.width;
+				ctx.drawImage(img,0,0);
+				var dataURL = canvas.toDataURL('image/jpeg');
+				appendSrcImg(dataURL);	
+				canvas = null;
+			};		
+			img.src = url;
+		}		
+	}
+	
+	function langSelected(isSource,value){
+	    var langInput;
+		if (isSource==true){
+			langInput=document.getElementById("srcLang");
+		}else{
+			langInput=document.getElementById("tgtLang");
+		}
+		if (value=="custom"){
+		    langInput.disabled=false;
+		}else{
+		    langInput.disabled=true;
+			langInput.value=value;				
+		}
+	}
+	
+	function fileOverSize(base64){
+	    var strLen=base64.length;
+        var fileSize=strLen-(strLen/8)*2; //in byte
+		if (fileSize>3*1024*1024){
+		    return true;
+		}else{
+		    return false;
+		}
+	}
+	
+	</script>  
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="tab" style="display:flex;overflow-x:auto">
+				<button class="tablinks" onclick="switchTab(event, 'uploader')">Upload Helper</button>
+				<button class="tablinks" onclick="switchTab(event, 'settings')">Settings</button>
+			</div>	
+			<div id="uploader" class="tabcontent">
+				<select size="1" id="methodselect" onchange="methodChanged(this.value)">
+					<option value="localfile">Local File</option>					
+					<option value="remoteurl_server">Remote URL Server</option>	
+					<option value="remoteurl">Remote URL</option>
+				</select>			
+				<span id="local">
+					Choose Image: <input id="imgfile" type="file" name="image" onchange="onFileChosen(event)" />	
+				</span>
+				<span id="remote" style="display:none">
+					<input type="text" id="imgurl" value="" placeholder="http://" />
+					<button onclick="loadRemoteImg()">LOAD</button>
+				</span>
+				<button onclick="uploadImg()">Upload</button>
+				<div id="langselector">
+				    <div class="langselect">
+						From:
+						<select size="1" onchange="langSelected(true,this.value)">
+							<option value="auto">auto</option>							
+							<option value="zh">Chinese</option>
+							<option value="ja">Japanese</option>
+							<option value="ko">Korean</option>
+							<option value="en">English</option>
+							<option value="fr">French</option>
+							<option value="de">Germany</option>
+							<option value="it">Italian</option>
+							<option value="es">Spanish</option>
+							<option value="ar">Arabic</option>
+							<option value="ru">Russian</option>
+							<option value="custom">Custom</option>
+						</select>	
+						
+						<input type="text" id="srcLang" value="auto" disabled />
+					</div>
+					<div class="langselect">
+						To:
+						<select size="1" onchange="langSelected(false,this.value)">
+							<option value="en">English</option>
+							<option value="fr">French</option>
+							<option value="zh">Chinese</option>
+							<option value="ja">Japanese</option>
+							<option value="ko">Korean</option>
+							<option value="de">Germany</option>
+							<option value="it">Italian</option>
+							<option value="es">Spanish</option>
+							<option value="ar">Arabic</option>
+							<option value="ru">Russian</option>
+							<option value="custom">Custom</option>
+						</select>
+						<input type="text" id="tgtLang" value="en" disabled />
+					</div>
+				</div>
+				<button onclick="translateBoxes()">Translate</button>
+			</div>
+
+			<div id="settings" class="tabcontent">
+			    Remove spaces:<input type="checkbox" id="removeSpaces">
+				Remove line breaks:<input type="checkbox" id="removeLineBreaks" checked><br/>
+				Font size: <input type="text" id="fontsize" value="16px"/>
+				<div class="ocrselect">
+				    OCR Engline:
+					<select size="1" id="ocrselect">
+					    <option value="google">Google</option>					
+					    <option value="youdao">Youdao</option>
+				    </select>
+				</div>
+				Please fill your own api keys: <br/>
+				OCR Key: <input type="password" id="key" value=""/> <br/>
+				OCR App ID (required by youdao): <input type="text" id="appid" value=""/> <br/>
+				<div class="mtselect">
+				    Machine Translation Engline:
+					<select size="1" id="mtselect">	
+                        <option value="tencent">Tencent</option>					
+						<option value="googlewithoutapikey_cn">Google Wihout API Key (China)</option>
+						<option value="googlewithoutapikey">Google Wihout API Key</option>
+					    <option value="google">Google</option>					
+					    <option value="youdao">Youdao</option>
+				    </select>					
+				</div>
+				MT Key: <input type="password" id="mtkey" value=""/> <br/>
+				MT App ID: <input type="text" id="mtappid" value=""/> 
+				
+			</div>
+		</div>
+		<div class="row">			
+		    <div>Target:</div>
+			<div id="tgtContainer" class="img-container">
+			<div id="overlay" style="position:absolute;left:0;top:0;height:100%;width: 100%;">
+			</div>
+			<div id="status"></div>
+			</div>
+					
+		</div>
+		<div class="row">	
+		    <div>Source:</div>
+			<div id="srcContainer" class="img-container">
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		switchTab(null,'uploader');
+	</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webtoon",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://your-supabase-url.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "your_supabase_anon_key_here",
+    "DATABASE_URL": "postgresql://user:password@host/neondb?sslmode=require",
+    "NEON_DATABASE_URL": "postgresql://user:password@host/neondb?sslmode=require",
+    "NEXT_PUBLIC_SITE_URL": "https://example.com",
+    "NEXT_PUBLIC_R2_ACCOUNT_ID": "your_r2_account_id_here",
+    "NEXT_PUBLIC_R2_ACCESS_KEY_ID": "your_r2_access_key_id_here",
+    "R2_SECRET_ACCESS_KEY": "your_r2_secret_access_key_here",
+    "NEXT_PUBLIC_R2_BUCKET_NAME": "posite",
+    "NEXT_PUBLIC_R2_PUBLIC_URL": "https://your-r2-public-url.r2.dev",
+    "NEXT_PUBLIC_GOOGLE_FONTS_API_KEY": "your_google_fonts_api_key_here",
+    "META_PAGE_ID": "your_meta_page_id_here",
+    "META_ACCESS_TOKEN": "your_meta_access_token_here",
+    "SOCIAL_WEBHOOK_SECRET": "secret123",
+    "SUPABASE_SERVICE_ROLE_KEY": "your_supabase_service_role_key_here",
+    "NEXT_PUBLIC_CDN_DOMAIN": "https://your-cdn-domain.workers.dev",
+    "DISCORD_WEBHOOK_URL": "your_discord_webhook_url_here",
+    "QPAY_BASE_URL": "https://merchant.qpay.mn/v2",
+    "QPAY_CLIENT_ID": "YOUR_CLIENT_ID",
+    "QPAY_CLIENT_SECRET": "your_qpay_client_secret_here",
+    "QPAY_INVOICE_CODE": "YOUR_INVOICE_CODE",
+    "NODE_VERSION": "20",
+    "RESEND_API_KEY": "your_resend_api_key_here"
+  }
+}
