@@ -1,5 +1,6 @@
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +11,28 @@ export async function GET(request: Request) {
     const protocol = isDev ? 'http' : (request.headers.get('x-forwarded-proto') || 'https');
     const origin = `${protocol}://${host}`;
 
+    const cookieStore = await cookies();
+    let response = NextResponse.next();
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kcdzmijmghjljjbhcefp.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjZHptaWptZ2hqbGpqYmhjZWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNjc5OTEsImV4cCI6MjEwMDY0Mzk5MX0.x2dDcwsSUxENIrQbBvjgE6BUFwbk8ySGP3vo_husY1E',
+        {
+            cookies: {
+                getAll() {
+                    return cookieStore.getAll();
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) => {
+                        cookieStore.set(name, value, options);
+                        response.cookies.set(name, value, options);
+                    });
+                },
+            },
+        }
+    );
+
     try {
-        const supabase = await createClient();
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -27,7 +48,12 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${origin}/videos?auth_error=${encodeURIComponent(error?.message || 'Google Auth Failed')}`);
         }
 
-        return NextResponse.redirect(data.url, { status: 303 });
+        const redirectResponse = NextResponse.redirect(data.url, { status: 303 });
+        // Copy any PKCE code_verifier cookies onto the redirect response!
+        response.cookies.getAll().forEach(c => {
+            redirectResponse.cookies.set(c.name, c.value, c);
+        });
+        return redirectResponse;
     } catch (err: any) {
         console.error("Google OAuth server exception:", err);
         return NextResponse.redirect(`${origin}/videos?auth_error=${encodeURIComponent(err?.message || 'Google Auth Exception')}`);
