@@ -79,6 +79,7 @@ export default function VideoDetailPage() {
     const handlePurchaseClick = (type: 'purchase' | 'rental') => {
         if (!user) {
             toast.error("Нэвтэрсэн байх шаардлагатай.");
+            window.dispatchEvent(new Event('openAuth'));
             return;
         }
         setPaymentType(type);

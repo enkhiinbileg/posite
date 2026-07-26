@@ -16,17 +16,6 @@ export interface CategoryWithStats {
   first_video_thumbnail?: string | null;
 }
 
-// Format numbers like 1.58M, 126K, 475
-export function formatCountNumber(num: number): string {
-  if (!num || num <= 0) return "0";
-  if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(2).replace(/\.00$/, '') + 'M';
-  }
-  if (num >= 1_000) {
-    return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
-  }
-  return num.toString();
-}
 
 export async function getCategoriesWithFirstVideoAction() {
   try {
@@ -66,8 +55,9 @@ export async function getCategoriesWithFirstVideoAction() {
     // 3. Attach first video thumbnail & stats to each category
     const result: CategoryWithStats[] = categories.map((cat: any) => {
       // Filter videos belonging to this category/genre
-      const catVideos = allVideos.filter(v => {
-        const genres = Array.isArray(v.webtoons?.genres) ? v.webtoons.genres : [];
+      const catVideos = allVideos.filter((v: any) => {
+        const webtoonObj = Array.isArray(v.webtoons) ? v.webtoons[0] : v.webtoons;
+        const genres = Array.isArray(webtoonObj?.genres) ? webtoonObj.genres : [];
         const isMatch = genres.some((g: string) => 
           g.toLowerCase() === cat.name.toLowerCase() || 
           g.toLowerCase() === cat.slug.toLowerCase()
@@ -76,14 +66,15 @@ export async function getCategoriesWithFirstVideoAction() {
       });
 
       // Calculate total views
-      const totalViews = catVideos.reduce((sum, v) => sum + (v.views || 0), 0);
+      const totalViews = catVideos.reduce((sum: number, v: any) => sum + (v.views || 0), 0);
       const videoCount = catVideos.length;
 
       // Find first video thumbnail
       const firstVideo = catVideos[0];
+      const webtoonObj = Array.isArray(firstVideo?.webtoons) ? firstVideo.webtoons[0] : firstVideo?.webtoons;
       const firstThumbnail = cat.thumbnail_url || 
         firstVideo?.thumbnail_url || 
-        firstVideo?.webtoons?.image || 
+        webtoonObj?.image || 
         '/logo.png';
 
       return {

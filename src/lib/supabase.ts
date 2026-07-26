@@ -1,14 +1,11 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 const getSupabaseUrl = () => {
-    // ALWAYS return the direct Supabase URL for initialization.
-    // This ensures that Server-Side Rendering (SSR) and Client-Side Hydration
-    // use the exact same string, preventing the "Hydration failed" fatal error.
-    return 'https://jtlwllzaxscxqtcoqpll.supabase.co';
+    return 'https://kcdzmijmgjljbhcefp.supabase.co';
 };
 
 const supabaseUrl = getSupabaseUrl();
-const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0bHdsbHpheHNjeHF0Y29xcGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NjMxNzAsImV4cCI6MjA4NDAzOTE3MH0.e31jvTn1pD9bVRrR7q99EUvHiVDXD_xvhDUPKuwWwLo';
+const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjZHptaWptZ2hqbGpqYmhjZWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwNjc5OTEsImV4cCI6MjEwMDY0Mzk5MX0.x2dDcwsSUxENIrQbBvjgE6BUFwbk8ySGP3vo_husY1E';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || HARDCODED_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

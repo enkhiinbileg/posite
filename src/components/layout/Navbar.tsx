@@ -84,7 +84,7 @@ export function Navbar() {
             }
         };
         const handleOpenNotifications = () => setIsNotificationOpen(true);
-        const handleOpenAuth = () => router.push('/');
+        const handleOpenAuth = () => setIsAuthModalOpen(true);
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

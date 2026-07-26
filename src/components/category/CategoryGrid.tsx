@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { formatCountNumber, CategoryWithStats } from "@/app/actions/category-actions";
+import { type CategoryWithStats } from "@/app/actions/category-actions";
 import { FolderHeart, Play, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCountNumber } from "@/lib/utils";
 
 interface CategoryGridProps {
   categories: CategoryWithStats[];

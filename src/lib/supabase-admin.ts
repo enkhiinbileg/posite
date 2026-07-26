@@ -7,11 +7,12 @@ function getSupabaseAdmin(): SupabaseClient {
         return supabaseAdminInstance;
     }
 
-    const supabaseUrl = 'https://jtlwllzaxscxqtcoqpll.supabase.co';
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kcdzmijmgjljbhcefp.supabase.co';
+    const HARDCODED_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjZHptaWptZ2hqbGpqYmhjZWZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTA2Nzk5MSwiZXhwIjoyMTAwNjQzOTkxfQ.la-UA331IJNuSCTAYgezOlDulEiu29aUNRMheZeI0vE';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || HARDCODED_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-        throw new Error("Missing Supabase Service Role Key. This is required for Server Actions on Vercel. Please add SUPABASE_SERVICE_ROLE_KEY to your Vercel Project Settings.");
+        throw new Error("Missing Supabase Service Role Key.");
     }
 
     console.log("🛠️ Initializing Supabase Admin client...");

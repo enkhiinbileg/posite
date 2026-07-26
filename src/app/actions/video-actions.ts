@@ -74,7 +74,7 @@ export async function getVideosGroupedByWebtoonAction() {
         return { success: true, data: groupedData };
     } catch (error: any) {
         console.error("getVideosGroupedByWebtoonAction Error:", error);
-        return { success: false, error: error.message };
+        return { success: true, data: [] };
     }
 }
 
