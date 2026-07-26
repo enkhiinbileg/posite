@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sidebar } from "./Sidebar";
 import { Navbar } from "./Navbar";
 import { BottomNav } from "./BottomNav";
 import { SearchOverlay } from "./SearchOverlay";
@@ -20,12 +19,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     // Global Error Suppression for Supabase/Network instability
-    // This stops the annoying "Failed to fetch" alerts in the browser.
     useEffect(() => {
         const handleError = (e: any) => {
             const message = e?.message || e?.reason?.message || "";
             if (message.includes("Failed to fetch") || message.includes("Load failed")) {
-                // Silencing these network failures as they are handled by our Streaming/Retry logic
                 if (e.preventDefault) e.preventDefault();
                 return true;
             }
@@ -40,27 +37,23 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         };
     }, []);
 
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
     const isAdminPage = pathname?.startsWith('/admin');
     const isReaderPage = pathname?.includes('/read/');
     const isLandingPage = pathname === '/' && !user;
     const isSecretPage = pathname === '/secret';
     const hideLayout = isAdminPage || isReaderPage || isLandingPage;
-    const hideNavAndSidebar = hideLayout;
+    const hideNav = hideLayout;
 
     return (
         <GlobalErrorBoundary>
-            <div className="flex min-h-screen flex-col">
+            <div className="flex min-h-screen flex-col w-full">
                 <Suspense fallback={null}>
                     <PageLoader />
                 </Suspense>
-                {!hideNavAndSidebar && <Sidebar />}
-                <div className={cn(
-                    "flex-1 transition-all duration-300",
-                    !hideNavAndSidebar && "lg:pl-24",
-                    !hideLayout && "pb-20 lg:pb-0"
-                )}>
-                    {!hideNavAndSidebar && (
+                
+                <div className="flex-1 w-full transition-all duration-300">
+                    {!hideNav && (
                         isSecretPage ? (
                             <div className="hidden lg:block">
                                 <Navbar />
@@ -74,7 +67,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                         initial={{ opacity: 0, y: hideLayout ? 0 : 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="min-h-screen"
+                        className="min-h-screen w-full"
                     >
                         {children}
                     </motion.main>
