@@ -375,13 +375,13 @@ export function Navbar() {
                                     >
                                         <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg border-2 border-transparent group-hover/btn:border-primary transition-all overflow-hidden">
                                             <img
-                                                src={userAvatar || user.user_metadata.avatar_url || `https://ui-avatars.com/api/?name=${user.email}`}
+                                                src={userAvatar || user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email || 'user')}`}
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
                                         <div className="hidden lg:block text-left">
                                             <div className="flex items-center gap-1.5">
-                                                <p className="text-xs font-black text-white">{user.user_metadata.full_name || user.email?.split('@')[0]}</p>
+                                                <p className="text-xs font-black text-white">{user?.user_metadata?.full_name || user.email?.split('@')[0]}</p>
                                                 {isVip && <Crown className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
                                                 {isNsfwVip && <Crown className="w-3 h-3 text-rose-500 fill-rose-500" />}
                                             </div>
@@ -394,7 +394,7 @@ export function Navbar() {
                                         isProfileOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-2 lg:group-hover:opacity-100 lg:group-hover:visible lg:group-hover:translate-y-0"
                                     )}>
                                         <div className="p-4 border-b border-white/5">
-                                            <p className="text-sm font-bold text-white truncate">{user.user_metadata.full_name || user.email}</p>
+                                            <p className="text-sm font-bold text-white truncate">{user?.user_metadata?.full_name || user.email}</p>
                                             <p className="text-xs text-muted truncate">{user.email}</p>
                                         </div>
 
