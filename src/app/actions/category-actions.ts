@@ -16,32 +16,15 @@ export interface CategoryWithStats {
   first_video_thumbnail?: string | null;
 }
 
-const DEFAULT_CATEGORIES = [
-  'Friend', 'Japanese', 'Anime', 'Korean', 'Teen 18+', 'Cheating',
-  'Hot Mom', 'Public', 'Japanese Hardcore', 'POV (Point Of View)',
-  'Homemade', 'Chinese Teen 18+', 'Skinny Big Tits', 'Uncensored',
-  'Cum Inside', 'Animation', 'Goth', 'Hardcore Fuck', 'Hentai',
-  'Asian Homemade', 'Story', 'Surprise Mom', 'Japanese Hot Mom', 'Massage'
-];
-
 export async function getCategoriesWithFirstVideoAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
-    let { data: categories, error } = await supabaseAdmin
+    const { data: categories, error } = await supabaseAdmin
       .from('video_categories')
       .select('*')
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
-    if (error || !categories || categories.length === 0) {
-      categories = DEFAULT_CATEGORIES.map((name, idx) => ({
-        id: `cat-${idx + 1}`,
-        name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        thumbnail_url: null,
-        sort_order: idx + 1,
-        is_active: true
-      }));
-    }
+    const allCategories = categories || [];
 
     const { data: videos } = await supabaseAdmin
       .from('videos')
@@ -49,7 +32,7 @@ export async function getCategoriesWithFirstVideoAction(): Promise<{ success: bo
 
     const allVideos = videos || [];
 
-    const result: CategoryWithStats[] = categories.map((cat: any) => {
+    const result: CategoryWithStats[] = allCategories.map((cat: any) => {
       const catVideos = allVideos.filter((v: any) => {
         const webtoonObj = Array.isArray(v.webtoons) ? v.webtoons[0] : v.webtoons;
         const genres = Array.isArray(webtoonObj?.genres) ? webtoonObj.genres : [];
@@ -87,20 +70,14 @@ export async function getCategoriesWithFirstVideoAction(): Promise<{ success: bo
 
 export async function getAllCategoriesAdminAction(): Promise<{ success: boolean; data?: CategoryWithStats[]; error?: string }> {
   try {
-    let { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('video_categories')
       .select('*')
       .order('sort_order', { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      data = DEFAULT_CATEGORIES.map((name, idx) => ({
-        id: `cat-${idx + 1}`,
-        name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        thumbnail_url: null,
-        sort_order: idx + 1,
-        is_active: true
-      }));
+    if (error) {
+      console.error("getAllCategoriesAdminAction DB error:", error);
+      return { success: false, error: error.message };
     }
 
     return { success: true, data: data || [] };
@@ -133,25 +110,20 @@ export async function createCategoryAction(data: {
       .select();
 
     if (error) {
-      console.warn("createCategoryAction error:", error);
+      console.error("createCategoryAction error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/videos");
     revalidatePath("/admin/categories");
     return { success: true, data: created?.[0] };
   } catch (error: any) {
-    return { success: true };
+    return { success: false, error: error.message };
   }
 }
 
 export async function updateCategoryAction(id: string, data: Partial<CategoryWithStats>): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    if (id.startsWith('cat-')) {
-      revalidatePath("/videos");
-      revalidatePath("/admin/categories");
-      return { success: true };
-    }
-
     const { data: updated, error } = await supabaseAdmin
       .from('video_categories')
       .update(data)
@@ -159,38 +131,34 @@ export async function updateCategoryAction(id: string, data: Partial<CategoryWit
       .select();
 
     if (error) {
-      console.warn("updateCategoryAction error:", error);
+      console.error("updateCategoryAction error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/videos");
     revalidatePath("/admin/categories");
     return { success: true, data: updated?.[0] };
   } catch (error: any) {
-    return { success: true };
+    return { success: false, error: error.message };
   }
 }
 
 export async function deleteCategoryAction(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    if (id.startsWith('cat-')) {
-      revalidatePath("/videos");
-      revalidatePath("/admin/categories");
-      return { success: true };
-    }
-
     const { error } = await supabaseAdmin
       .from('video_categories')
       .delete()
       .eq('id', id);
 
     if (error) {
-      console.warn("deleteCategoryAction error:", error);
+      console.error("deleteCategoryAction error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/videos");
     revalidatePath("/admin/categories");
     return { success: true };
   } catch (error: any) {
-    return { success: true };
+    return { success: false, error: error.message };
   }
 }

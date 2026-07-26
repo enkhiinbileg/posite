@@ -98,9 +98,9 @@ export default function AdminCategoriesPage() {
     setSaving(true);
     const res = await deleteCategoryAction(id);
     if (res.success) {
-      await loadCategories();
+      setCategories(prev => prev.filter(c => c.id !== id));
     } else {
-      alert("Устгахад алдаа гарлаа: " + res.error);
+      alert("Устгахад алдаа гарлаа: " + (res.error || "Алдаа"));
     }
     setSaving(false);
   };
