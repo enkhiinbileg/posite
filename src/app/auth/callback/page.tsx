@@ -12,8 +12,8 @@ export default function AuthCallbackPage() {
         // HARD FAILSAFE TIMEOUT: Under NO circumstances should anyone stay on /auth/callback for more than 1.5 seconds!
         const forceRedirectTimer = setTimeout(() => {
             if (isMounted) {
-                console.warn("[AuthCallback] Hard failsafe timeout reached (1.5s), force redirecting to /home");
-                window.location.replace('/home');
+                console.warn("[AuthCallback] Hard failsafe timeout reached (1.5s), force redirecting to /videos");
+                window.location.replace('/videos');
             }
         }, 1500);
 
@@ -31,7 +31,7 @@ export default function AuthCallbackPage() {
         const handleAuthCallback = async () => {
             const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
             const code = urlParams.get('code');
-            const next = urlParams.get('next') || '/home';
+            const next = urlParams.get('next') || '/videos';
 
             try {
                 // 1. Check if session is already active
@@ -46,11 +46,11 @@ export default function AuthCallbackPage() {
                 if (code) {
                     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
                     if (data?.session) {
-                        // Persist session into localStorage & cookies to guarantee Google App / Mobile WebViews never lose it
+                        // Persist session into localStorage & cookies
                         try {
                             const sessionStr = JSON.stringify(data.session);
-                            localStorage.setItem('sb-jtlwllzaxscxqtcoqpll-auth-token', sessionStr);
-                            document.cookie = `sb-jtlwllzaxscxqtcoqpll-auth-token=${encodeURIComponent(sessionStr)}; path=/; max-age=31536000; SameSite=Lax`;
+                            localStorage.setItem('sb-kcdzmijmghjljjbhcefp-auth-token', sessionStr);
+                            document.cookie = `sb-kcdzmijmghjljjbhcefp-auth-token=${encodeURIComponent(sessionStr)}; path=/; max-age=31536000; SameSite=Lax`;
                         } catch (e) {}
 
                         await supabase.auth.setSession(data.session);
