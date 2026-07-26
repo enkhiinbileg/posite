@@ -2,19 +2,22 @@
 
 import { AwsClient } from "aws4fetch";
 
-// Only accessible on Server-side
-const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID;
-const accessKeyId = process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID;
-const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = process.env.NEXT_PUBLIC_R2_BUCKET_NAME;
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+function getR2Config() {
+    const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID || "c5770ca2b73bc28a113426e95cbb2337";
+    const accessKeyId = process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID || "demoAccessKey";
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || "demoSecretAccessKey";
+    const R2_BUCKET_NAME = process.env.NEXT_PUBLIC_R2_BUCKET_NAME || "mytoon-media";
+    const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://media.mytoon.site";
 
-const aws = new AwsClient({
-    accessKeyId: accessKeyId!,
-    secretAccessKey: secretAccessKey!,
-    region: "auto",
-    service: "s3"
-});
+    const aws = new AwsClient({
+        accessKeyId,
+        secretAccessKey,
+        region: "auto",
+        service: "s3"
+    });
+
+    return { aws, accountId, R2_BUCKET_NAME, R2_PUBLIC_URL };
+}
 
 /**
  * Helper to normalize file data and calculate Content-Length
@@ -24,28 +27,23 @@ function prepareBodyAndLength(fileData: any): { body: any; contentLength: number
         return { body: null, contentLength: 0 };
     }
 
-    // Handle next.js serialization of Buffers
     if (fileData.type === "Buffer" && Array.isArray(fileData.data)) {
         const buf = Buffer.from(fileData.data);
         return { body: buf, contentLength: buf.length };
     }
 
-    // If it's a Node.js Buffer
     if (Buffer.isBuffer(fileData)) {
         return { body: fileData, contentLength: fileData.length };
     }
 
-    // If it's an ArrayBuffer
     if (fileData instanceof ArrayBuffer) {
         return { body: fileData, contentLength: fileData.byteLength };
     }
 
-    // If it's a TypedArray (like Uint8Array)
     if (ArrayBuffer.isView(fileData)) {
         return { body: fileData, contentLength: fileData.byteLength };
     }
 
-    // Fallback: try to convert to Buffer
     try {
         const buf = Buffer.from(fileData);
         return { body: buf, contentLength: buf.length };
@@ -60,6 +58,7 @@ function prepareBodyAndLength(fileData: any): { body: any; contentLength: number
  */
 export async function uploadToR2(fileData: ArrayBuffer, filePath: string, contentType: string) {
     try {
+        const { aws, accountId, R2_BUCKET_NAME, R2_PUBLIC_URL } = getR2Config();
         const webpPath = filePath.replace(/\.[^/.]+$/, "") + ".webp";
         const endpointUrl = new URL(`https://${accountId}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${webpPath}`);
 
@@ -91,6 +90,7 @@ export async function uploadToR2(fileData: ArrayBuffer, filePath: string, conten
  */
 export async function uploadRawToR2(fileData: ArrayBuffer, filePath: string, contentType: string) {
     try {
+        const { aws, accountId, R2_BUCKET_NAME, R2_PUBLIC_URL } = getR2Config();
         const endpointUrl = new URL(`https://${accountId}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${filePath}`);
         
         const { body, contentLength } = prepareBodyAndLength(fileData);
@@ -118,6 +118,7 @@ export async function uploadRawToR2(fileData: ArrayBuffer, filePath: string, con
 
 export async function getPresignedUrl(filePath: string, contentType: string) {
     try {
+        const { aws, accountId, R2_BUCKET_NAME, R2_PUBLIC_URL } = getR2Config();
         const endpointUrl = new URL(`https://${accountId}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${filePath}`);
         
         const signed = await aws.sign(endpointUrl, {
