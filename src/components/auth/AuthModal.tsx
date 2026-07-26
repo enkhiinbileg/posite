@@ -51,7 +51,12 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     email,
                     password,
                 });
-                if (signInError) throw signInError;
+                if (signInError) {
+                    if (signInError.message.includes('Invalid login credentials')) {
+                        throw new Error('И-мэйл эсвэл нууц үг буруу байна. Хэрэв бүртгүүлээгүй бол доорх "Шинээр бүртгүүлэх" товчийг дараарай.');
+                    }
+                    throw signInError;
+                }
                 onClose();
                 window.location.reload();
             }
