@@ -62,27 +62,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
         }
     };
 
-    const handleGoogleAuth = async () => {
-        setError(null);
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.mytoon.site';
-
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${origin}/auth/callback`,
-                    queryParams: {
-                        prompt: 'select_account'
-                    }
-                }
-            });
-
-            if (error) {
-                window.location.href = `/api/auth/google`;
-            }
-        } catch {
-            window.location.href = `/api/auth/google`;
-        }
+    const handleGoogleAuth = () => {
+        window.location.href = '/api/auth/google';
     };
 
     return (
