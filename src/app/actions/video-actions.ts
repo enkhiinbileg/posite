@@ -20,56 +20,28 @@ export async function getVideosAction() {
 
 export async function getVideosGroupedByWebtoonAction() {
     try {
-        console.log("Fetching grouped videos...");
-        const { data, error } = await supabaseAdmin
-            .from('webtoons')
-            .select(`
-                id, 
-                title, 
-                image, 
-                genres,
-                description,
-                videos (
-                    id, 
-                    title, 
-                    thumbnail_url, 
-                    duration,
-                    is_free, 
-                    is_nsfw,
-                    price_purchase,
-                    price_rental,
-                    views,
-                    created_at
-                )
-            `);
+        console.log("Fetching videos...");
+        const { data: videos, error } = await supabaseAdmin
+            .from('videos')
+            .select('*')
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error("Supabase Error:", error);
-            throw error;
+            return { success: true, data: [] };
         }
         
-        console.log("Raw Data Count:", data?.length);
-        
-        // 1. Filter out webtoons with 0 videos
-        const groupedData: any[] = (data || []).filter(w => w.videos && w.videos.length > 0);
-        
-        // 2. Fetch standalone videos (without webtoon)
-        const { data: standaloneVideos, error: standaloneError } = await supabaseAdmin
-            .from('videos')
-            .select('*')
-            .is('webtoon_id', null);
+        if (!videos || videos.length === 0) {
+            return { success: true, data: [] };
+        }
 
-        if (!standaloneError && standaloneVideos && standaloneVideos.length > 0) {
-            groupedData.push({
-                id: 'standalone',
-                title: 'Бусад бичлэгүүд',
-                image: '/logo.png',
-                genres: ['Бүх видео'],
-                videos: standaloneVideos
-            });
-        }
-        
-        console.log("Total Groups:", groupedData.length);
+        const groupedData = [{
+            id: 'standalone',
+            title: 'Сүүлд нэмэгдсэн бичлэгүүд',
+            image: '/logo.png',
+            genres: ['Бүх видео'],
+            videos: videos
+        }];
         
         return { success: true, data: groupedData };
     } catch (error: any) {
