@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 const getSupabaseUrl = () => {
-    return 'https://kcdzmijmgjljbhcefp.supabase.co';
+    return 'https://kcdzmijmghjljjbhcefp.supabase.co';
 };
 
 const supabaseUrl = getSupabaseUrl();

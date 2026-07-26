@@ -27,7 +27,7 @@ export default function VideosPage() {
                 if (vidRes.success) {
                     setGroupedVideos(vidRes.data || []);
                 } else {
-                    setError(vidRes.error);
+                    setError((vidRes as any).error || "Алдаа гарлаа");
                 }
 
                 if (catRes.success && catRes.data) {

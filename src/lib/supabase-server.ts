@@ -3,7 +3,7 @@ import { cookies, headers } from 'next/headers'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export function getSupabaseUrl() {
-    return 'https://kcdzmijmgjljbhcefp.supabase.co';
+    return 'https://kcdzmijmghjljjbhcefp.supabase.co';
 }
 
 export function createPublicClient() {

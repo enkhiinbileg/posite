@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Fallback re-hydration from localStorage for Google Search App and Mobile WebViews
                 if (!session && typeof window !== 'undefined') {
                     try {
-                        const stored = localStorage.getItem('sb-kcdzmijmgjljbhcefp-auth-token') || localStorage.getItem('sb-jtlwllzaxscxqtcoqpll-auth-token');
+                        const stored = localStorage.getItem('sb-kcdzmijmghjljjbhcefp-auth-token') || localStorage.getItem('sb-kcdzmijmgjljbhcefp-auth-token');
                         if (stored) {
                             const parsed = typeof stored === 'string' && stored.startsWith('{') ? JSON.parse(stored) : null;
                             if (parsed?.access_token && parsed?.refresh_token) {
