@@ -218,7 +218,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             }}
                             className="text-xs font-semibold text-white/80 hover:text-white transition-colors underline cursor-pointer"
                         >
-                            Буцах -> Нэвтрэх
+                            Буцах -&gt; Нэвтрэх
                         </button>
                     ) : (
                         <p className="text-xs font-semibold text-white/80">
