@@ -165,9 +165,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-1 text-white/75 hover:text-white transition-colors"
+                                className="absolute right-1 text-white/75 hover:text-white transition-colors cursor-pointer p-1"
+                                title={showPassword ? "Нууц үг нуух" : "Нууц үг харах"}
                             >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                                {showPassword ? <EyeOff className="w-4 h-4 text-red-400" /> : <Eye className="w-4 h-4 text-white/80" />}
                             </button>
                         </div>
                     </div>
