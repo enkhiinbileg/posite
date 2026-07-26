@@ -81,6 +81,7 @@ export default function AdminLayoutClient({
         { label: "Санхүү", icon: Wallet, href: "/admin/finance", roles: ["admin"] },
         { label: "Төлбөр", icon: DollarSign, href: "/admin/payouts", roles: ["admin", "translator"] },
         { label: "Бичлэгүүд", icon: Film, href: "/admin/videos", roles: ["admin", "moderator"] },
+        { label: "Категориуд", icon: Tag, href: "/admin/categories", roles: ["admin", "moderator"] },
         { label: "Модератор Тайлан", icon: Shield, href: "/admin/moderators", roles: ["admin", "moderator"] },
         { label: "Мэдэгдэл", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
         { label: "Багажууд", icon: Shield, href: "/admin/chapters/fix", roles: ["admin"] },
