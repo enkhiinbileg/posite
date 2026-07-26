@@ -154,8 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 
                 if (event === 'SIGNED_IN') {
                     const currentPath = window.location.pathname;
-                    if ((currentPath === '/' || currentPath.startsWith('/auth')) && currentPath !== '/home') {
-                        window.location.replace('/home');
+                    if ((currentPath === '/' || currentPath.startsWith('/auth')) && currentPath !== '/videos') {
+                        window.location.replace('/videos');
                     }
                 } else if (event === 'PASSWORD_RECOVERY') {
                     window.location.href = '/update-password';
