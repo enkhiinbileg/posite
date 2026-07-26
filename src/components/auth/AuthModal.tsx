@@ -7,11 +7,11 @@ import { supabase } from '@/lib/supabase';
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
-    initialMode?: 'signin' | 'signup';
+    initialMode?: 'signin' | 'signup' | 'reset';
 }
 
 export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
-    const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+    const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +31,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
         setError(null);
 
         try {
-            if (mode === 'signup') {
+            if (mode === 'reset') {
+                const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                });
+                if (resetError) throw resetError;
+                setError('Нууц үг сэргээх линкийг и-мэйл рүү тань илгээлээ! Спам (Spam) хавтасаа шалгаарай.');
+            } else if (mode === 'signup') {
                 const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
@@ -44,7 +50,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     onClose();
                     window.location.reload();
                 } else {
-                    setError('Бүртгэл амжилттай! И-мэйл хаягаа шалгаж баталгаажуулна уу.');
+                    setError('Бүртгэл амжилттай! Хэрэв И-мэйл ирэхгүй бол шууд нэвтэрч туршаарай.');
                 }
             } else {
                 const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -53,7 +59,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 });
                 if (signInError) {
                     if (signInError.message.includes('Invalid login credentials')) {
-                        throw new Error('И-мэйл эсвэл нууц үг буруу байна. Хэрэв бүртгүүлээгүй бол доорх "Шинээр бүртгүүлэх" товчийг дараарай.');
+                        throw new Error('И-мэйл эсвэл нууц үг буруу байна. Хэрэв бүртгүүлээгүй бол "Шинээр бүртгүүлэх" товчийг дараарай.');
                     }
                     throw signInError;
                 }
@@ -94,7 +100,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
         >
             {/* Pure Crystal Frosted Glass Container */}
             <div 
-                className="relative w-full max-w-[385px] bg-[#121018]/45 backdrop-blur-3xl border border-white/25 rounded-[2.5rem] p-8 lg:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-7 overflow-hidden animate-in zoom-in-95 duration-200"
+                className="relative w-full max-w-[385px] bg-[#121018]/45 backdrop-blur-3xl border border-white/25 rounded-[2.5rem] p-8 lg:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-6 overflow-hidden animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Top Glass Refraction Specular Highlight */}
@@ -110,34 +116,36 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
 
                 {/* Header Title */}
                 <div className="text-center pt-2 relative z-10">
-                    <h2 className="text-3xl font-black italic tracking-wide text-white uppercase font-sans drop-shadow-lg">
-                        {mode === 'signin' ? 'Нэвтрэх' : 'БҮРТГҮҮЛЭХ'}
+                    <h2 className="text-2.5xl font-black italic tracking-wide text-white uppercase font-sans drop-shadow-lg">
+                        {mode === 'signin' ? 'Нэвтрэх' : mode === 'signup' ? 'БҮРТГҮҮЛЭХ' : 'НУУЦ ҮГ СЕРГЭЭХ'}
                     </h2>
                 </div>
 
-                {/* Error Banner */}
+                {/* Error / Success Banner */}
                 {error && (
-                    <div className={`p-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md relative z-10 ${error.includes('амжилттай') ? 'bg-green-500/20 text-green-200 border border-green-400/30' : 'bg-red-500/20 text-red-200 border border-red-400/30'}`}>
+                    <div className={`p-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md relative z-10 ${error.includes('амжилттай') || error.includes('илгээлээ') ? 'bg-green-500/20 text-green-200 border border-green-400/30' : 'bg-red-500/20 text-red-200 border border-red-400/30'}`}>
                         {error}
                     </div>
                 )}
 
-                {/* Google OAuth Glass Pill Button */}
-                <button
-                    type="button"
-                    onClick={handleGoogleAuth}
-                    className="relative z-10 w-full h-12 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold rounded-full flex items-center justify-center gap-3 backdrop-blur-2xl transition-all active:scale-[0.98] cursor-pointer group shadow-md"
-                >
-                    <img 
-                        src="https://www.svgrepo.com/show/475656/google-color.svg" 
-                        alt="Google" 
-                        className="w-4 h-4 object-contain transition-transform group-hover:scale-110"
-                    />
-                    <span className="text-xs font-bold tracking-wide">Google-ээр үргэлжлүүлэх</span>
-                </button>
+                {/* Google OAuth Button */}
+                {mode !== 'reset' && (
+                    <button
+                        type="button"
+                        onClick={handleGoogleAuth}
+                        className="relative z-10 w-full h-12 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold rounded-full flex items-center justify-center gap-3 backdrop-blur-2xl transition-all active:scale-[0.98] cursor-pointer group shadow-md"
+                    >
+                        <img 
+                            src="https://www.svgrepo.com/show/475656/google-color.svg" 
+                            alt="Google" 
+                            className="w-4 h-4 object-contain transition-transform group-hover:scale-110"
+                        />
+                        <span className="text-xs font-bold tracking-wide">Google-ээр үргэлжлүүлэх</span>
+                    </button>
+                )}
 
                 {/* Underline Glass Form */}
-                <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                     <div className="space-y-1.5 relative">
                         <label className="text-xs font-semibold text-white/85 tracking-wide block">И-мэйл хаяг</label>
                         <div className="relative flex items-center border-b border-white/40 focus-within:border-white transition-colors pb-2">
@@ -152,26 +160,42 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                         </div>
                     </div>
 
-                    <div className="space-y-1.5 relative">
-                        <label className="text-xs font-semibold text-white/85 tracking-wide block">Нууц үг</label>
-                        <div className="relative flex items-center border-b border-white/40 focus-within:border-white transition-colors pb-2">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none pr-8 font-medium"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-1 text-white/75 hover:text-white transition-colors cursor-pointer p-1"
-                                title={showPassword ? "Нууц үг нуух" : "Нууц үг харах"}
-                            >
-                                {showPassword ? <EyeOff className="w-4 h-4 text-red-400" /> : <Eye className="w-4 h-4 text-white/80" />}
-                            </button>
+                    {mode !== 'reset' && (
+                        <div className="space-y-1.5 relative">
+                            <label className="text-xs font-semibold text-white/85 tracking-wide block">Нууц үг</label>
+                            <div className="relative flex items-center border-b border-white/40 focus-within:border-white transition-colors pb-2">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none pr-8 font-medium"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-1 text-white/75 hover:text-white transition-colors cursor-pointer p-1"
+                                    title={showPassword ? "Нууц үг нуух" : "Нууц үг харах"}
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4 text-red-400" /> : <Eye className="w-4 h-4 text-white/80" />}
+                                </button>
+                            </div>
+                            {mode === 'signin' && (
+                                <div className="text-right pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setMode('reset');
+                                            setError(null);
+                                        }}
+                                        className="text-[11px] font-semibold text-white/70 hover:text-white transition-colors cursor-pointer underline"
+                                    >
+                                        Нууц үг мартсан уу?
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
 
                     {/* Pill White Submit Button */}
                     <button
@@ -179,25 +203,38 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                         disabled={loading}
                         className="w-full h-12 bg-white text-black font-extrabold rounded-full hover:bg-white/95 transition-all active:scale-[0.98] disabled:opacity-50 text-sm tracking-wide shadow-2xl shadow-white/20 cursor-pointer uppercase"
                     >
-                        {loading ? 'Уншиж байна...' : mode === 'signin' ? 'Нэвтрэх' : 'Бүртгүүлэх'}
+                        {loading ? 'Уншиж байна...' : mode === 'signin' ? 'Нэвтрэх' : mode === 'signup' ? 'БҮРТГҮҮЛЭХ' : 'СЕРГЭЭХ ИЛГЭЭХ'}
                     </button>
                 </form>
 
                 {/* Footer Navigation */}
                 <div className="text-center pt-1 relative z-10">
-                    <p className="text-xs font-semibold text-white/80">
-                        {mode === 'signin' ? "Бүртгэлгүй юу? " : "Бүртгэлтэй юу? "}
+                    {mode === 'reset' ? (
                         <button
                             type="button"
                             onClick={() => {
-                                setMode(mode === 'signin' ? 'signup' : 'signin');
+                                setMode('signin');
                                 setError(null);
                             }}
-                            className="text-white hover:underline font-bold ml-1"
+                            className="text-xs font-semibold text-white/80 hover:text-white transition-colors underline cursor-pointer"
                         >
-                            {mode === 'signin' ? 'Шинээр бүртгүүлэх' : 'Нэвтрэх'}
+                            Буцах -> Нэвтрэх
                         </button>
-                    </p>
+                    ) : (
+                        <p className="text-xs font-semibold text-white/80">
+                            {mode === 'signin' ? "Бүртгэлгүй юу? " : "Бүртгэлтэй юу? "}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMode(mode === 'signin' ? 'signup' : 'signin');
+                                    setError(null);
+                                }}
+                                className="text-white hover:underline font-bold ml-1 cursor-pointer"
+                            >
+                                {mode === 'signin' ? 'Шинээр бүртгүүлэх' : 'Нэвтрэх'}
+                            </button>
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
