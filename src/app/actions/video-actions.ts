@@ -107,11 +107,28 @@ export async function getVideoDetailAction(id: string, userId?: string) {
     }
 }
 
+function sanitizeVideoPayload(data: any) {
+    const allowedKeys = [
+        'title', 'description', 'thumbnail_url', 'video_url', 
+        'price_purchase', 'price_rental', 'rental_duration_hours', 
+        'is_free', 'is_nsfw'
+    ];
+
+    const cleanPayload: any = {};
+    for (const key of allowedKeys) {
+        if (data[key] !== undefined) {
+            cleanPayload[key] = data[key];
+        }
+    }
+    return cleanPayload;
+}
+
 export async function createVideoAction(data: any) {
     try {
+        const payload = sanitizeVideoPayload(data);
         const { data: createdVideo, error } = await supabaseAdmin
             .from('videos')
-            .insert(data)
+            .insert(payload)
             .select()
             .single();
 
@@ -159,9 +176,10 @@ export async function deleteVideoAction(id: string) {
 
 export async function updateVideoAction(id: string, data: any) {
     try {
+        const payload = sanitizeVideoPayload(data);
         const { data: updatedVideo, error } = await supabaseAdmin
             .from('videos')
-            .update(data)
+            .update(payload)
             .eq('id', id)
             .select()
             .single();
