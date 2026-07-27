@@ -95,8 +95,9 @@ export default function AdminVideosPage() {
             }
 
             const xhr = new XMLHttpRequest();
-            xhr.open('PUT', res.url);
-            // S3 requires Exact Content-Type match with presigned URL signature
+            // Send to our proxy to bypass CORS and avoid Next.js memory limits!
+            xhr.open('PUT', '/api/proxy-upload');
+            xhr.setRequestHeader('x-target-url', res.url);
             xhr.setRequestHeader('Content-Type', contentType);
 
             xhr.upload.onprogress = (event) => {
@@ -112,7 +113,9 @@ export default function AdminVideosPage() {
                     setVideoReady(true);
                     toast.success("✓ Бичлэг R2-д амжилттай хадгалагдлаа!");
                 } else {
-                    toast.error(`Бичлэг хуулахад алдаа: R2 upload failed: ${xhr.status}`);
+                    let err = xhr.statusText;
+                    try { err = JSON.parse(xhr.responseText).error || err; } catch(e){}
+                    toast.error(`Бичлэг хуулахад алдаа: ${err}`);
                 }
             };
 
@@ -152,8 +155,8 @@ export default function AdminVideosPage() {
             const res = await getPresignedUrl(filePath, contentType);
             if (res.success && res.url) {
                 const xhr = new XMLHttpRequest();
-                xhr.open('PUT', res.url);
-                // Content-Type is required by S3 signed urls
+                xhr.open('PUT', '/api/proxy-upload');
+                xhr.setRequestHeader('x-target-url', res.url);
                 xhr.setRequestHeader('Content-Type', contentType);
                 
                 xhr.onload = () => {
@@ -162,7 +165,9 @@ export default function AdminVideosPage() {
                         setThumbnailReady(true);
                         toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
                     } else {
-                        toast.error(`Зураг хуулахад алдаа: R2 upload failed: ${xhr.status}`);
+                        let err = xhr.statusText;
+                        try { err = JSON.parse(xhr.responseText).error || err; } catch(e){}
+                        toast.error(`Зураг хуулахад алдаа: ${err}`);
                     }
                 };
                 xhr.onerror = () => toast.error("Зураг хуулахад сүлжээний алдаа гарлаа.");
