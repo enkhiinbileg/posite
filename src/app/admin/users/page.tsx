@@ -19,7 +19,7 @@ export default function AdminUsers() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [filter, setFilter] = useState<'all' | 'admin' | 'moderator' | 'youtuber' | 'translator' | 'vip'>('all');
+    const [filter, setFilter] = useState<'all' | 'admin' | 'moderator' | 'vip'>('all');
     const [vipModal, setVipModal] = useState<{ userId: string, userName: string } | null>(null);
     const [pricingPlans, setPricingPlans] = useState<any[]>([]);
     const [isGranting, setIsGranting] = useState(false);
@@ -122,20 +122,6 @@ export default function AdminUsers() {
         const result = await toggleUserRole(id, 'is_moderator', !currentStatus);
         if (!result.success) toast.error("Алдаа гарлаа: " + result.error);
         else { setUsers(users.map(u => u.id === id ? { ...u, is_moderator: !currentStatus } : u)); toast.success("Moderator эрх өөрчлөгдлөө!"); }
-    }
-
-    async function toggleYouTuber(id: string, currentStatus: boolean) {
-        if (!confirm(`Та энэ хэрэглэгчийн YouTuber эрхийг ${currentStatus ? 'хасах' : 'өгөх'}дөө итгэлтэй байна уу?`)) return;
-        const result = await toggleUserRole(id, 'is_youtuber', !currentStatus);
-        if (!result.success) toast.error("Алдаа гарлаа: " + result.error);
-        else { setUsers(users.map(u => u.id === id ? { ...u, is_youtuber: !currentStatus } : u)); toast.success("YouTuber эрх өөрчлөгдлөө!"); }
-    }
-
-    async function toggleTranslator(id: string, currentStatus: boolean) {
-        if (!confirm(`Та энэ хэрэглэгчийн Орчуулагч эрхийг ${currentStatus ? 'хасах' : 'өгөх'}дөө итгэлтэй байна уу?`)) return;
-        const result = await toggleUserRole(id, 'is_translator', !currentStatus);
-        if (!result.success) toast.error("Алдаа гарлаа: " + result.error);
-        else { setUsers(users.map(u => u.id === id ? { ...u, is_translator: !currentStatus } : u)); toast.success("Орчуулагч эрх өөрчлөгдлөө!"); }
     }
 
     async function grantVip(plan: any, isTest: boolean = false, isCustom: boolean = false) {
@@ -312,8 +298,7 @@ export default function AdminUsers() {
                         { id: 'all', label: 'Бүгд' },
                         { id: 'admin', label: 'Админ' },
                         { id: 'moderator', label: 'Модератор' },
-                        { id: 'youtuber', label: 'YouTuber' },
-                        { id: 'translator', label: 'Орчуулагч' },
+
                         { id: 'vip', label: 'VIP' },
                     ].map((tab) => (
                         <button
@@ -404,34 +389,7 @@ export default function AdminUsers() {
                                                             MOD
                                                         </span>
                                                     )}
-                                                    {user.is_translator && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-500 text-[10px] font-black border border-purple-500/20">
-                                                            <Languages className="w-3 h-3" />
-                                                            TRANSLATOR
-                                                        </span>
-                                                    )}
-                                                    {user.is_youtuber && (
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-600/10 text-red-600 text-[10px] font-black border border-red-600/20">
-                                                                <Youtube className="w-3 h-3" />
-                                                                CREATOR
-                                                            </span>
-                                                            {(user.bank_account_number || user.youtube_channel_name) && (
-                                                                <div className="flex flex-col gap-0.5 mt-1 p-2 rounded-lg bg-white/[0.02] border border-white/5 text-[9px]">
-                                                                    {user.youtube_channel_name && (
-                                                                        <a href={user.youtube_channel_url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline flex items-center gap-1">
-                                                                            <Youtube className="w-2.5 h-2.5" /> {user.youtube_channel_name}
-                                                                        </a>
-                                                                    )}
-                                                                    {user.bank_account_number && (
-                                                                        <p className="text-muted/60 font-medium">
-                                                                            {user.bank_name}: {user.bank_account_number} ({user.bank_account_name})
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+
                                                     {user.is_vip && (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-500 text-[10px] font-black border border-yellow-500/20">
                                                             <Crown className="w-3 h-3" />
@@ -444,7 +402,7 @@ export default function AdminUsers() {
                                                             +18 VIP
                                                         </span>
                                                     )}
-                                                    {!user.is_admin && !user.is_moderator && !user.is_youtuber && !user.is_vip && !user.is_translator && !user.nsfw_vip_expiration && (
+                                                    {!user.is_admin && !user.is_moderator && !user.is_vip && !user.nsfw_vip_expiration && (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 text-muted text-[10px] font-bold border border-white/5">
                                                             <User className="w-3 h-3" />
                                                             USER
@@ -525,29 +483,6 @@ export default function AdminUsers() {
                                                         Mod
                                                     </button>
 
-                                                    <button
-                                                        onClick={() => toggleYouTuber(user.id, user.is_youtuber)}
-                                                        className={cn(
-                                                            "px-2 py-1 rounded-md text-[10px] font-black transition-all border uppercase tracking-tighter",
-                                                            user.is_youtuber
-                                                                ? "bg-red-600/10 border-red-600/20 text-red-600 hover:bg-red-600/20"
-                                                                : "bg-white/5 border-white/10 text-muted hover:text-white"
-                                                        )}
-                                                    >
-                                                        YouTuber
-                                                    </button>
-
-                                                    <button
-                                                        onClick={() => toggleTranslator(user.id, user.is_translator)}
-                                                        className={cn(
-                                                            "px-2 py-1 rounded-md text-[10px] font-black transition-all border uppercase tracking-tighter",
-                                                            user.is_translator
-                                                                ? "bg-purple-500/10 border-purple-500/20 text-purple-500 hover:bg-purple-500/20"
-                                                                : "bg-white/5 border-white/10 text-muted hover:text-white"
-                                                        )}
-                                                    >
-                                                        Translator
-                                                    </button>
 
                                                     <button
                                                         onClick={() => toggleAdmin(user.id, user.is_admin)}
@@ -562,30 +497,7 @@ export default function AdminUsers() {
                                                     </button>
                                                 </div>
 
-                                                {user.is_youtuber && (
-                                                    <div className="flex items-center gap-1.5 animate-in slide-in-from-right-2 duration-300">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Ref код"
-                                                            defaultValue={user.referral_code || ""}
-                                                            onBlur={(e) => {
-                                                                if (e.target.value !== user.referral_code) {
-                                                                    updateReferralCode(user.id, e.target.value);
-                                                                }
-                                                            }}
-                                                            className="w-20 bg-white/5 border border-white/10 rounded-md px-2 py-1 text-[9px] text-white focus:outline-none focus:border-red-500/50 transition-all"
-                                                        />
-                                                        <select
-                                                            value={user.affiliate_tier || 'bronze'}
-                                                            onChange={(e) => updateAffiliateTier(user.id, e.target.value)}
-                                                            className="w-16 bg-white/5 border border-white/10 rounded-md px-1 py-1 text-[9px] text-white focus:outline-none cursor-pointer uppercase font-black tracking-tighter"
-                                                        >
-                                                            <option value="bronze" className="bg-surface">BRONZE</option>
-                                                            <option value="silver" className="bg-surface">SILVER</option>
-                                                            <option value="gold" className="bg-surface">GOLD</option>
-                                                        </select>
-                                                    </div>
-                                                )}
+
                                             </div>
                                         </td>
                                     </tr>
