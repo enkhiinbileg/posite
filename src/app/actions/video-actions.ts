@@ -64,32 +64,33 @@ export async function getVideoDetailAction(id: string, userId?: string) {
         let hasAccess = video.is_free;
         let accessData = null;
 
-        if (!hasAccess && userId) {
-            const { data: access, error: accessError } = await supabaseAdmin
-                .from('video_access')
-                .select('*')
-                .eq('user_id', userId)
-                .eq('video_id', id)
-                .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        if (userId) {
+            // Check if user is admin or VIP
+            const { data: profile } = await supabaseAdmin
+                .from('profiles')
+                .select('is_admin, is_vip, is_nsfw_vip')
+                .eq('id', userId)
                 .maybeSingle();
 
-            if (access) {
+            if (profile && (profile.is_admin || profile.is_vip || profile.is_nsfw_vip)) {
                 hasAccess = true;
-                accessData = access;
             }
-        }
 
-        // Fetch related videos from the same webtoon
-        let relatedVideos: any[] = [];
-        if (video.webtoon_id) {
-            const { data: related } = await supabaseAdmin
-                .from('videos')
-                .select('*')
-                .eq('webtoon_id', video.webtoon_id)
-                .neq('id', id)
-                .order('order_index', { ascending: true });
-            
-            relatedVideos = related || [];
+            // Also check video_access table for rental/purchase
+            if (!hasAccess) {
+                const { data: access } = await supabaseAdmin
+                    .from('video_access')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .eq('video_id', id)
+                    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+                    .maybeSingle();
+
+                if (access) {
+                    hasAccess = true;
+                    accessData = access;
+                }
+            }
         }
 
         return { 
@@ -98,7 +99,7 @@ export async function getVideoDetailAction(id: string, userId?: string) {
                 ...video, 
                 hasAccess, 
                 accessData,
-                relatedVideos 
+                relatedVideos: [] 
             } 
         };
     } catch (error: any) {
