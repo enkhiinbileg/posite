@@ -271,22 +271,22 @@ export function PricingPlans() {
             {/* Payment Modal with 2 Clear Options: QPay vs Bank Transfer */}
             <AnimatePresence>
                 {selectedPlan && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-hidden">
                         <motion.div 
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 text-white shadow-2xl"
+                            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-zinc-900 border border-white/10 rounded-3xl p-5 md:p-6 space-y-4 text-white shadow-2xl custom-scrollbar"
                         >
                             <button 
                                 onClick={() => { setSelectedPlan(null); setPaymentMethod(null); setQpayData(null); }}
-                                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer"
+                                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer z-10"
                             >
                                 <X className="w-5 h-5" />
                             </button>
 
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-black text-white uppercase">{selectedPlan.title}</h3>
+                            <div className="space-y-0.5 pr-8">
+                                <h3 className="text-xl font-black text-white uppercase">{selectedPlan.title}</h3>
                                 <p className="text-sm text-amber-400 font-bold font-mono">{(Number(selectedPlan.price)).toLocaleString()}₮</p>
                             </div>
 
@@ -295,7 +295,7 @@ export function PricingPlans() {
                                 <button
                                     onClick={() => { setActiveModalTab('qpay'); setPaymentMethod(null); }}
                                     className={cn(
-                                        "py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
+                                        "py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
                                         activeModalTab === 'qpay'
                                             ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
                                             : "text-zinc-400 hover:text-white"
@@ -306,7 +306,7 @@ export function PricingPlans() {
                                 <button
                                     onClick={() => setActiveModalTab('bank')}
                                     className={cn(
-                                        "py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
+                                        "py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
                                         activeModalTab === 'bank'
                                             ? "bg-amber-500 text-black shadow-lg shadow-amber-500/30"
                                             : "text-zinc-400 hover:text-white"
@@ -318,19 +318,19 @@ export function PricingPlans() {
 
                             {/* TAB 1: QPay Payment */}
                             {activeModalTab === 'qpay' && (
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {!qpayData ? (
                                         <button
                                             onClick={handleQPayCreate}
                                             disabled={loading}
-                                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-lg cursor-pointer"
+                                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-lg cursor-pointer"
                                         >
                                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
                                             <span>📱 QPay QR код үүсгэх</span>
                                         </button>
                                     ) : (
-                                        <div className="space-y-4 text-center">
-                                            <div className="bg-white p-4 rounded-2xl w-48 h-48 mx-auto flex items-center justify-center border-4 border-amber-400 shadow-xl relative">
+                                        <div className="space-y-3 text-center">
+                                            <div className="bg-white p-3 rounded-2xl w-36 h-36 mx-auto flex items-center justify-center border-4 border-amber-400 shadow-xl relative">
                                                 {qpayData.qr_image || qpayData.qrImage ? (
                                                     <img 
                                                         src={qpayData.qr_image?.startsWith('data:') ? qpayData.qr_image : `data:image/png;base64,${qpayData.qr_image || qpayData.qrImage}`} 
@@ -338,41 +338,41 @@ export function PricingPlans() {
                                                         className="w-full h-full object-contain" 
                                                     />
                                                 ) : (
-                                                    <QrCode className="w-24 h-24 text-[#0a0610]" />
+                                                    <QrCode className="w-20 h-20 text-[#0a0610]" />
                                                 )}
                                             </div>
 
-                                            <p className="text-xs text-zinc-400 font-bold">QR код уншуулах эсвэл доорх банкны апп-аар шууд шилжүүлнэ үү</p>
+                                            <p className="text-[11px] text-zinc-400 font-bold">QR код уншуулах эсвэл доорх банкны апп-аар шууд шилжүүлнэ үү</p>
 
                                             {/* Bank App Deep Link Grid */}
                                             {qpayData.urls && qpayData.urls.length > 0 && (
-                                                <div className="space-y-2 pt-1 text-left">
+                                                <div className="space-y-1.5 pt-1 text-left">
                                                     <div className="flex items-center justify-between px-1">
-                                                        <span className="text-[11px] font-black text-zinc-400 uppercase tracking-wider">
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">
                                                             БАНК СОНГОХ (ШУУД НЭВТРЭХ)
                                                         </span>
-                                                        <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                                                        <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
                                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> Автомат шалгалт
                                                         </span>
                                                     </div>
 
-                                                    <div className="grid grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 custom-scrollbar">
+                                                    <div className="grid grid-cols-4 gap-2 max-h-36 overflow-y-auto p-1 custom-scrollbar">
                                                         {qpayData.urls.map((bank: any, idx: number) => (
                                                             <a
                                                                 key={idx}
                                                                 href={bank.link}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-amber-400/50 transition-all group cursor-pointer"
+                                                                className="flex flex-col items-center gap-1 p-1.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-amber-400/50 transition-all group cursor-pointer"
                                                             >
-                                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/40 flex items-center justify-center p-1 group-hover:scale-110 transition-transform">
+                                                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-black/40 flex items-center justify-center p-0.5 group-hover:scale-110 transition-transform">
                                                                     {bank.logo ? (
-                                                                        <img src={bank.logo} alt={bank.name} className="w-full h-full object-contain rounded-lg" />
+                                                                        <img src={bank.logo} alt={bank.name} className="w-full h-full object-contain rounded" />
                                                                     ) : (
-                                                                        <Building2 className="w-5 h-5 text-amber-400" />
+                                                                        <Building2 className="w-4 h-4 text-amber-400" />
                                                                     )}
                                                                 </div>
-                                                                <span className="text-[10px] font-bold text-zinc-300 group-hover:text-white truncate w-full text-center">
+                                                                <span className="text-[9px] font-bold text-zinc-300 group-hover:text-white truncate w-full text-center">
                                                                     {bank.description || bank.name}
                                                                 </span>
                                                             </a>
@@ -384,7 +384,7 @@ export function PricingPlans() {
                                             <button
                                                 onClick={checkQPayStatus}
                                                 disabled={isCheckingPayment}
-                                                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-2"
+                                                className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-1"
                                             >
                                                 {isCheckingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "Төлбөр шалгах"}
                                             </button>
