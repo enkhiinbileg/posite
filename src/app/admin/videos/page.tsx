@@ -67,59 +67,59 @@ export default function AdminVideosPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 1. Instant local preview and duration detection
+        // Detect duration from local file
         const objectUrl = URL.createObjectURL(file);
-        setFormData(prev => ({ ...prev, video_url: objectUrl }));
-
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.onloadedmetadata = () => {
-            const detectedDuration = formatDuration(video.duration);
+        const videoEl = document.createElement('video');
+        videoEl.preload = 'metadata';
+        videoEl.onloadedmetadata = () => {
+            const detectedDuration = formatDuration(videoEl.duration);
             setFormData(prev => ({ ...prev, duration: detectedDuration }));
+            URL.revokeObjectURL(objectUrl);
         };
-        video.src = objectUrl;
+        videoEl.src = objectUrl;
 
-        // 2. Upload to Cloudflare R2 CDN in background
+        // Upload via server API route (bypasses CORS)
+        toast.info("Бичлэг R2-руу байршуулж байна...");
+        setUploadProgress(1);
         try {
-            const { getPresignedUrl } = await import("@/lib/r2");
-            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-            const filePath = `videos/${fileName}`;
-
-            const res = await getPresignedUrl(filePath, file.type || 'video/mp4');
-            if (!res.success || !res.url) {
-                toast.success("Бичлэг сонгогдон бэлэн боллоо!");
-                return;
-            }
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('type', 'video');
 
             const xhr = new XMLHttpRequest();
-            xhr.open('PUT', res.url);
+            xhr.open('POST', '/api/upload');
 
             xhr.upload.onprogress = (event) => {
                 if (event.lengthComputable) {
-                    const percentComplete = Math.round((event.loaded / event.total) * 100);
-                    setUploadProgress(percentComplete);
+                    setUploadProgress(Math.round((event.loaded / event.total) * 100));
                 }
             };
 
             xhr.onload = () => {
-                if (xhr.status === 200 && res.publicUrl) {
-                    setFormData(prev => ({ ...prev, video_url: res.publicUrl! }));
-                    toast.success("Бичлэг сүлжээнд амжилттай хуулагдлаа!");
-                } else {
-                    toast.success("Бичлэг бэлэн боллоо!");
-                }
                 setUploadProgress(0);
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success && data.url) {
+                        setFormData(prev => ({ ...prev, video_url: data.url }));
+                        setVideoReady(true);
+                        toast.success("✓ Бичлэг R2-д амжилттай хадгалагдлаа!");
+                    } else {
+                        toast.error(`Бичлэг хуулахад алдаа: ${data.error || 'Тодорхойгүй алдаа'}`);
+                    }
+                } else {
+                    toast.error(`Сервер алдаа: ${xhr.status}`);
+                }
             };
 
             xhr.onerror = () => {
-                toast.success("Бичлэг сонгогдон бэлэн боллоо!");
                 setUploadProgress(0);
+                toast.error("Бичлэг байршуулахад сүлжээний алдаа гарлаа.");
             };
 
-            xhr.send(file);
+            xhr.send(fd);
         } catch (error: any) {
-            toast.success("Бичлэг сонгогдон бэлэн боллоо!");
             setUploadProgress(0);
+            toast.error("Бичлэг байршуулахад алдаа: " + error.message);
         }
     };
 
@@ -127,7 +127,7 @@ export default function AdminVideosPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 1. Show instant local preview (only for UI preview, NOT saved to DB)
+        // 1. Instant local preview for UI
         const reader = new FileReader();
         reader.onload = (event) => {
             if (event.target?.result) {
@@ -137,31 +137,24 @@ export default function AdminVideosPage() {
         };
         reader.readAsDataURL(file);
 
-        // 2. Upload to Cloudflare R2 CDN and save ONLY the public URL
+        // 2. Upload via server API route
         try {
-            const { getPresignedUrl } = await import("@/lib/r2");
-            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-            const filePath = `thumbnails/${fileName}`;
-            const contentType = file.type || 'image/jpeg';
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('type', 'thumbnail');
 
-            const res = await getPresignedUrl(filePath, contentType);
-            if (res.success && res.url) {
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', res.url);
-                xhr.onload = () => {
-                    if (xhr.status === 200 && res.publicUrl) {
-                        setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
-                        setThumbnailReady(true);
-                        toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
-                    } else {
-                        toast.error("Зураг хуулахад алдаа гарлаа.");
-                    }
-                };
-                xhr.onerror = () => toast.error("Зураг хуулахад сүлжээний алдаа гарлаа.");
-                xhr.send(file);
+            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+            const data = await res.json();
+
+            if (data.success && data.url) {
+                setFormData(prev => ({ ...prev, thumbnail_url: data.url }));
+                setThumbnailReady(true);
+                toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
+            } else {
+                toast.error(`Зураг хуулахад алдаа: ${data.error || 'Тодорхойгүй'}`);
             }
-        } catch (error) {
-            toast.error("Зураг байршуулахад алдаа гарлаа.");
+        } catch (error: any) {
+            toast.error("Зураг байршуулахад алдаа: " + error.message);
         }
     };
 
