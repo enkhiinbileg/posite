@@ -317,11 +317,27 @@ export default function AdminVideosPage() {
                                         <select
                                             value={formData.webtoon_id}
                                             onChange={(e) => setFormData({...formData, webtoon_id: e.target.value})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all appearance-none"
+                                            className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all cursor-pointer font-bold text-sm"
                                         >
-                                            <option value="">Сонгох...</option>
-                                            {webtoons.map((w) => (
-                                                <option key={w.id} value={w.id} className="bg-[#0f0f0f]">{w.title}</option>
+                                            <option value="" className="bg-zinc-900 text-zinc-400">Сонгох...</option>
+                                            {[
+                                                "Japanese",
+                                                "Asian",
+                                                "Amateur",
+                                                "Hentai",
+                                                "Anal",
+                                                "Hardcore",
+                                                "Cosplay",
+                                                "POV",
+                                                "MILF",
+                                                "Friend",
+                                                "VR",
+                                                "Celebrity",
+                                                "Бусад"
+                                            ].map((cat) => (
+                                                <option key={cat} value={cat} className="bg-zinc-900 text-white font-bold">
+                                                    {cat}
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
