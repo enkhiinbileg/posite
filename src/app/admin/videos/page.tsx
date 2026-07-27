@@ -337,27 +337,9 @@ export default function AdminVideosPage() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Ticket className="w-3 h-3"/> Түрээслэх үнэ</label>
-                                        <input 
-                                            type="number"
-                                            value={formData.price_rental || 0}
-                                            onChange={(e) => setFormData({...formData, price_rental: parseInt(e.target.value) || 0})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Clock className="w-3 h-3"/> Түрээслэх цаг</label>
-                                        <input 
-                                            type="number"
-                                            value={formData.rental_duration_hours || 0}
-                                            onChange={(e) => setFormData({...formData, rental_duration_hours: parseInt(e.target.value) || 0})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Clock className="w-3 h-3"/> Дараалал (1, 2...)</label>
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Clock className="w-3 h-3"/> Дараалал (1, 2, 3...)</label>
                                         <input 
                                             type="number"
                                             value={formData.order_index || 0}
@@ -365,27 +347,18 @@ export default function AdminVideosPage() {
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none"
                                         />
                                     </div>
-                                </div>
-
-                                <div className="flex gap-8 pt-4">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={formData.is_free} 
-                                            onChange={(e) => setFormData({...formData, is_free: e.target.checked})}
-                                            className="w-5 h-5 rounded-lg border-white/10 bg-white/5 accent-primary"
-                                        />
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-white transition-colors">Үнэгүй бичлэг</span>
-                                    </label>
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={formData.is_nsfw} 
-                                            onChange={(e) => setFormData({...formData, is_nsfw: e.target.checked})}
-                                            className="w-5 h-5 rounded-lg border-white/10 bg-white/5 accent-primary"
-                                        />
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-white transition-colors flex items-center gap-2"><Shield className="w-3 h-3"/> 18+ Контент</span>
-                                    </label>
+                                    <div className="space-y-2 flex flex-col justify-end pb-2">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.is_free} 
+                                                onChange={(e) => setFormData({...formData, is_free: e.target.checked})}
+                                                className="w-5 h-5 rounded-lg border-white/10 bg-white/5 accent-emerald-500"
+                                            />
+                                            <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest group-hover:text-emerald-300 transition-colors">🆓 ҮНЭГҮЙ ТҮШИХ БИЧЛЭГ (Бүх хүнд нээлттэй)</span>
+                                        </label>
+                                        <p className="text-[10px] text-zinc-500 font-medium ml-8 mt-1">Чеклээгүй тохиолдолд зөвхөн 👑 VIP эрхтэй хэрэглэгчид үзэх боломжтой.</p>
+                                    </div>
                                 </div>
 
                                 <button 
@@ -407,15 +380,15 @@ export default function AdminVideosPage() {
                         <div key={video.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 group">
                             <div className="relative aspect-video rounded-2xl overflow-hidden mb-4">
                                 <img src={video.thumbnail_url} className="w-full h-full object-cover" alt="" />
-                                {video.is_free && <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-500 rounded-md text-[8px] font-black text-white uppercase">Үнэгүй</div>}
-                                {video.is_nsfw && <div className="absolute top-3 right-3 px-2 py-1 bg-rose-500 rounded-md text-[8px] font-black text-white uppercase">18+</div>}
+                                {video.is_free ? (
+                                    <div className="absolute top-3 left-3 px-3 py-1 bg-emerald-500 rounded-lg text-[9px] font-black text-white uppercase tracking-wider shadow-lg">🆓 Үнэгүй</div>
+                                ) : (
+                                    <div className="absolute top-3 left-3 px-3 py-1 bg-amber-500 rounded-lg text-[9px] font-black text-black uppercase tracking-wider font-mono shadow-lg">👑 VIP Бичлэг</div>
+                                )}
                             </div>
                             <h3 className="text-sm font-black text-white uppercase tracking-tight line-clamp-1 mb-2">{video.title}</h3>
                             <div className="flex items-center justify-between text-zinc-500 text-[10px] font-bold mb-6">
-                                <div className="flex flex-col">
-                                    <span>{video.price_rental}₮ / {video.price_purchase}₮</span>
-                                    <span className="text-zinc-500 mt-1 uppercase text-[9px] tracking-widest font-black">Video Status</span>
-                                </div>
+                                <span className="text-amber-400 font-black uppercase text-[10px] tracking-widest">{video.is_free ? "Нийтэд Нээлттэй" : "👑 VIP Зөвхөн"}</span>
                                 <span className="text-right">{new Date(video.created_at).toLocaleDateString()}</span>
                             </div>
                             <div className="flex gap-2">
