@@ -116,20 +116,17 @@ export async function uploadRawToR2(fileData: ArrayBuffer, filePath: string, con
     }
 }
 
-export async function getPresignedUrl(filePath: string, contentType: string) {
+export async function getPresignedUrl(filePath: string, contentType?: string) {
     try {
         const { aws, accountId, R2_BUCKET_NAME, R2_PUBLIC_URL } = getR2Config();
+        const baseUrl = R2_PUBLIC_URL?.endsWith('/') ? R2_PUBLIC_URL.slice(0, -1) : R2_PUBLIC_URL;
         const endpointUrl = new URL(`https://${accountId}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${filePath}`);
         
         const signed = await aws.sign(endpointUrl, {
             method: 'PUT',
-            headers: {
-                'Content-Type': contentType
-            },
             aws: { signQuery: true }
         });
 
-        const baseUrl = R2_PUBLIC_URL?.endsWith('/') ? R2_PUBLIC_URL.slice(0, -1) : R2_PUBLIC_URL;
         return { url: signed.url, success: true, publicUrl: `${baseUrl}/${filePath}` };
     } catch (error: any) {
         console.error("Presigned URL Error:", error);
