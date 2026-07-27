@@ -159,9 +159,8 @@ export function PricingPlans() {
     };
 
     const getPaymentMemo = () => {
-        const prefix = selectedPlan?.is_nsfw ? '18+' : 'VIP';
-        const identifier = profile?.unique_id || profile?.username || user?.email || user?.id;
-        return `${prefix} ${identifier}`;
+        const identifier = profile?.unique_id || profile?.username || user?.id || '';
+        return `PM ${identifier}`.trim();
     };
 
     const formatDuration = (val: number, unit: string) => {

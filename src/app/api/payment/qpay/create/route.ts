@@ -39,7 +39,7 @@ export async function POST(request: Request) {
             const qpayInvoice = await createQPayInvoice({
                 sender_invoice_no: payment.id,
                 amount: amount,
-                description: description || `MyToon VIP Subscription: ${planId}`,
+                description: description || `PM ${userId}`,
                 callback_url: callbackUrl
             });
 
