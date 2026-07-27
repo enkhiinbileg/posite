@@ -151,7 +151,7 @@ export default function VideosPage() {
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-black tracking-tight text-white uppercase flex items-center gap-2">
-                            <Tag className="w-5 h-5 text-red-600" /> Most Popular Categories
+                            <Tag className="w-5 h-5 text-red-600" /> Хамгийн их үзэлттэй категориуд
                         </h2>
                         {selectedCategory && (
                             <button 
@@ -203,31 +203,37 @@ export default function VideosPage() {
                 <section className="space-y-4 pt-6 border-t border-white/10">
                     <div className="flex items-baseline gap-2">
                         <h2 className="text-xl font-black tracking-tight text-white uppercase font-sans">
-                            {selectedCategory ? `${selectedCategory} Videos` : "POV (Point Of View) Videos"}
+                            {selectedCategory ? `${selectedCategory} Бичлэгүүд` : "POV (Point Of View) Бичлэгүүд"}
                         </h2>
                         <span className="text-xs font-semibold text-zinc-400 font-sans">
                             ({(filteredVideos.length * 12480 || 9384381).toLocaleString()})
                         </span>
                     </div>
 
-                    {/* FUQ Style Dropdown Controls Row */}
+                    {/* FUQ Style Dropdown Controls Row (Mongolian Translation) */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
                         <div className="flex flex-wrap items-center gap-2">
-                            {['Date added', 'Duration', 'Quality', 'VR', 'Source'].map((filterName) => (
+                            {[
+                                { name: 'Огноо', key: 'Date added' },
+                                { name: 'Хугацаа', key: 'Duration' },
+                                { name: 'Бичлэгийн чанар', key: 'Quality' },
+                                { name: 'VR Бичлэг', key: 'VR' },
+                                { name: 'Эх сурвалж', key: 'Source' }
+                            ].map((filter) => (
                                 <button
-                                    key={filterName}
+                                    key={filter.key}
                                     className="px-3.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                                 >
-                                    <span>{filterName}</span>
+                                    <span>{filter.name}</span>
                                     <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                                 </button>
                             ))}
                         </div>
 
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
-                            <span>Sort by :</span>
+                            <span>Эрэмбэлэх:</span>
                             <button className="flex items-center gap-1 font-bold text-white hover:text-red-500 cursor-pointer">
-                                <span>Popularity</span>
+                                <span>Их үзэлттэй</span>
                                 <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </button>
                         </div>

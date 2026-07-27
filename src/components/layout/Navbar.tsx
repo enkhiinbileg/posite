@@ -271,16 +271,16 @@ export function Navbar() {
                         {/* FUQ Header Nav Links */}
                         <nav className="hidden md:flex items-center gap-5 text-sm font-bold text-zinc-300">
                             <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
-                                Videos <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                Видеонууд <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                             <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
-                                Categories <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                Категориуд <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                             <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
-                                Pornstars <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                Одод & Моделууд <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                             <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
-                                More <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                Бусад <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                         </nav>
                     </div>
@@ -294,7 +294,7 @@ export function Navbar() {
                             <input 
                                 type="text"
                                 readOnly
-                                placeholder="Search 9,384,381 videos..."
+                                placeholder="9.3 сая гаруй бичлэгээс хайх..."
                                 className="w-full bg-transparent text-sm text-white placeholder:text-zinc-400 focus:outline-none font-medium cursor-pointer"
                             />
                             <div className="flex items-center gap-2 text-zinc-400 border-l border-white/10 pl-2.5 ml-1">
