@@ -78,16 +78,26 @@ export default function AdminVideosPage() {
         };
         videoEl.src = objectUrl;
 
-        // Upload via server API route (bypasses CORS)
+        // Upload via pre-signed URL direct to R2 (bypasses server memory limits for large videos)
         toast.info("Бичлэг R2-руу байршуулж байна...");
         setUploadProgress(1);
         try {
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('type', 'video');
+            const { getPresignedUrl } = await import("@/lib/r2");
+            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            const filePath = `videos/${fileName}`;
+            const contentType = file.type || 'video/mp4';
+
+            const res = await getPresignedUrl(filePath, contentType);
+            if (!res.success || !res.url) {
+                toast.error("Бичлэг байршуулах хаяг үүсгэж чадсангүй!");
+                setUploadProgress(0);
+                return;
+            }
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/upload');
+            xhr.open('PUT', res.url);
+            // S3 requires Exact Content-Type match with presigned URL signature
+            xhr.setRequestHeader('Content-Type', contentType);
 
             xhr.upload.onprogress = (event) => {
                 if (event.lengthComputable) {
@@ -97,17 +107,12 @@ export default function AdminVideosPage() {
 
             xhr.onload = () => {
                 setUploadProgress(0);
-                if (xhr.status === 200) {
-                    const data = JSON.parse(xhr.responseText);
-                    if (data.success && data.url) {
-                        setFormData(prev => ({ ...prev, video_url: data.url }));
-                        setVideoReady(true);
-                        toast.success("✓ Бичлэг R2-д амжилттай хадгалагдлаа!");
-                    } else {
-                        toast.error(`Бичлэг хуулахад алдаа: ${data.error || 'Тодорхойгүй алдаа'}`);
-                    }
+                if (xhr.status === 200 && res.publicUrl) {
+                    setFormData(prev => ({ ...prev, video_url: res.publicUrl! }));
+                    setVideoReady(true);
+                    toast.success("✓ Бичлэг R2-д амжилттай хадгалагдлаа!");
                 } else {
-                    toast.error(`Сервер алдаа: ${xhr.status}`);
+                    toast.error(`Бичлэг хуулахад алдаа: R2 upload failed: ${xhr.status}`);
                 }
             };
 
@@ -116,7 +121,7 @@ export default function AdminVideosPage() {
                 toast.error("Бичлэг байршуулахад сүлжээний алдаа гарлаа.");
             };
 
-            xhr.send(fd);
+            xhr.send(file);
         } catch (error: any) {
             setUploadProgress(0);
             toast.error("Бичлэг байршуулахад алдаа: " + error.message);
@@ -137,21 +142,33 @@ export default function AdminVideosPage() {
         };
         reader.readAsDataURL(file);
 
-        // 2. Upload via server API route
+        // 2. Upload via pre-signed URL direct to R2
         try {
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('type', 'thumbnail');
+            const { getPresignedUrl } = await import("@/lib/r2");
+            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            const filePath = `thumbnails/${fileName}`;
+            const contentType = file.type || 'image/jpeg';
 
-            const res = await fetch('/api/upload', { method: 'POST', body: fd });
-            const data = await res.json();
-
-            if (data.success && data.url) {
-                setFormData(prev => ({ ...prev, thumbnail_url: data.url }));
-                setThumbnailReady(true);
-                toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
+            const res = await getPresignedUrl(filePath, contentType);
+            if (res.success && res.url) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', res.url);
+                // Content-Type is required by S3 signed urls
+                xhr.setRequestHeader('Content-Type', contentType);
+                
+                xhr.onload = () => {
+                    if (xhr.status === 200 && res.publicUrl) {
+                        setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
+                        setThumbnailReady(true);
+                        toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
+                    } else {
+                        toast.error(`Зураг хуулахад алдаа: R2 upload failed: ${xhr.status}`);
+                    }
+                };
+                xhr.onerror = () => toast.error("Зураг хуулахад сүлжээний алдаа гарлаа.");
+                xhr.send(file);
             } else {
-                toast.error(`Зураг хуулахад алдаа: ${data.error || 'Тодорхойгүй'}`);
+                toast.error("Зураг байршуулах хаяг үүсгэж чадсангүй!");
             }
         } catch (error: any) {
             toast.error("Зураг байршуулахад алдаа: " + error.message);
