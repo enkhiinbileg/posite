@@ -213,7 +213,7 @@ export default function AdminVideosPage() {
 
                 {showForm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-                        <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-8 max-h-[90vh] overflow-y-auto no-scrollbar relative shadow-2xl">
+                        <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-6 md:p-8 pt-10 max-h-[90vh] overflow-y-auto no-scrollbar relative shadow-2xl">
                             <button onClick={() => {
                                 setShowForm(false);
                                 setEditingId(null);
@@ -222,8 +222,8 @@ export default function AdminVideosPage() {
                                     price_purchase: 5000, price_rental: 1500, rental_duration_hours: 24,
                                     is_free: false, is_nsfw: false, webtoon_id: '', order_index: 0
                                 });
-                            }} className="absolute top-6 right-6 p-2 text-zinc-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-8">
+                            }} className="absolute top-6 right-6 p-2 text-zinc-500 hover:text-white transition-colors z-10"><X className="w-6 h-6" /></button>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mt-2 mb-8 leading-tight">
                                 {editingId ? "Бичлэг засах" : "Шинэ видео нэмэх"}
                             </h2>
                             
@@ -313,7 +313,7 @@ export default function AdminVideosPage() {
 
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Холбогдох вэбтүүн</label>
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Категори / Ангилал</label>
                                         <select
                                             value={formData.webtoon_id}
                                             onChange={(e) => setFormData({...formData, webtoon_id: e.target.value})}

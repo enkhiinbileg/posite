@@ -39,9 +39,9 @@ const firaSans = Fira_Sans({ weight: ["400", "700"], subsets: ["latin", "cyrilli
 const balsamiq = Balsamiq_Sans({ weight: "400", subsets: ["latin", "cyrillic"], variable: "--font-balsamiq" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mytoon.site"),
-  title: "MyToon - Таны дуртай комиксын ертөнц",
-  description: "MyToon. MYTOON. Хаана ч, хэзээ ч. Дуртай вэбтүүнээ уншиж эхлээрэй. Эхлэх. Бүртгүүлэх үү? И-мэйлээ оруулаад эхлээрэй. Нэвтрэх. Нууц үгээ мартсан уу ...",
+  metadataBase: new URL("https://fuq.site"),
+  title: "FUQ - 18+ Видео Платформ",
+  description: "Хамгийн халуухан 18+ видеонуудыг 4K ба Full HD чанараар хүлээн авч үзээрэй.",
   manifest: "/manifest.json",
   icons: {
     icon: "/logo.png",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "MyToon",
+    title: "FUQ",
   },
   other: {
     "google-site-verification": "verification_token", // Add actual token later if available
