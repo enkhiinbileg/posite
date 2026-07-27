@@ -1,19 +1,17 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-    Check, Crown, Zap, Star, X, Copy, Layout, List, Sparkles, 
-    Loader2, QrCode, CreditCard, Gem, Ghost, Film, ArrowLeft, Gift, Ticket, Lock 
+    Check, Crown, Zap, Star, X, Copy, Sparkles, 
+    Loader2, QrCode, CreditCard, Film, ShieldCheck 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { getUser8DigitId } from "@/lib/user-id";
 import { getPricingPlansAction } from "@/app/actions/vip-actions";
-
-const ICONS = { Zap, Crown, Star, Layout, List, Sparkles, Gem, Ghost, Film };
 
 interface PricingPlan {
     id: string;
@@ -23,9 +21,7 @@ interface PricingPlan {
     duration_unit: string;
     features: string[];
     is_recommended?: boolean;
-    is_nsfw?: boolean;
-    icon_name: string;
-    color_preset: string;
+    order_index?: number;
 }
 
 const DEFAULT_PLANS: PricingPlan[] = [
@@ -36,65 +32,57 @@ const DEFAULT_PLANS: PricingPlan[] = [
         duration_value: 1,
         duration_unit: "months",
         features: [
-            "Бүх VIP бичлэгүүдийг хязгааргүй үзэх",
-            "HD ба 4K дүрсний чанар",
+            "Бүх 18+ видеонуудыг хязгааргүй үзэх",
+            "4K Ultra HD & 1080p Full HD чанар",
+            "Шууд тоглох хурдан сервэрүүд",
             "Зар сурталчилгаагүй"
         ],
-        is_recommended: true,
-        is_nsfw: false,
-        icon_name: "Crown",
-        color_preset: "from-amber-500 to-yellow-500"
+        is_recommended: false
     },
     {
-        id: 'nsfw-1-month',
-        title: "18+ VIP 1 Сар",
-        price: 29900,
-        duration_value: 1,
+        id: 'vip-3-months',
+        title: "VIP 3 Сар",
+        price: 49900,
+        duration_value: 3,
         duration_unit: "months",
         features: [
-            "18+ тусгай бүх эксклюзив видеонууд",
-            "Хязгааргүй шууд үзэх",
-            "4K Ultra HD чанар"
+            "15% Хэмнэлттэй багц",
+            "Бүх 18+ видеонуудыг хязгааргүй үзэх",
+            "4K Ultra HD & 1080p Full HD чанар",
+            "Шууд тоглох хурдан сервэрүүд",
+            "Зар сурталчилгаагүй"
         ],
-        is_recommended: false,
-        is_nsfw: true,
-        icon_name: "Sparkles",
-        color_preset: "from-rose-500 to-red-500"
+        is_recommended: true
+    },
+    {
+        id: 'vip-1-year',
+        title: "VIP 1 Жил",
+        price: 159900,
+        duration_value: 1,
+        duration_unit: "years",
+        features: [
+            "35% Өндөр хэмнэлттэй багц",
+            "Бүх 18+ эксклюзив контент үзэх",
+            "4K Ultra HD ба VIP тусгай сервер",
+            "БҮХ шинэ бичлэгүүд шууд үзэх",
+            "Зар сурталчилгаагүй"
+        ],
+        is_recommended: false
     }
 ];
 
 export function PricingPlans() {
     const router = useRouter();
-    const { user, profile, loading: authLoading } = useAuth();
+    const { user, profile } = useAuth();
     const [plans, setPlans] = useState<PricingPlan[]>(DEFAULT_PLANS);
     const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
-    const [uniqueId, setUniqueId] = useState<string | null>(null);
-    const [isReferred, setIsReferred] = useState(false);
     const [loading, setLoading] = useState(false);
-    
-    // 2-Step States
-    const [step, setStep] = useState<1 | 2>(1);
-    const [selectedCategory, setSelectedCategory] = useState<'standard' | 'nsfw'>('standard');
     
     // QPay States
     const [paymentMethod, setPaymentMethod] = useState<'manual' | 'qpay' | null>(null);
     const [qpayData, setQpayData] = useState<any>(null);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
     const [paymentId, setPaymentId] = useState<string | null>(null);
-
-    // Fetch user Info
-    useEffect(() => {
-        if (user) {
-            setUserId(user.id);
-            if (profile?.unique_id) {
-                setUniqueId(profile.unique_id);
-            }
-        } else {
-            setUserId(null);
-            setUniqueId(null);
-        }
-    }, [user, profile]);
 
     useEffect(() => {
         fetchPlans();
@@ -117,7 +105,7 @@ export function PricingPlans() {
     };
 
     const handleSelectPlan = (plan: PricingPlan) => {
-        if (!userId) {
+        if (!user) {
             toast.error("VIP эрх авахын тулд эхлээд нэвтэрнэ үү!");
             return;
         }
@@ -200,159 +188,80 @@ export function PricingPlans() {
         return `${val} Хоног`;
     };
 
-    const categories = [
-        { 
-            id: 'standard', 
-            title: 'VIP БАГЦ', 
-            icon: Crown, 
-            features: [
-                'Бүх VIP бичлэгүүдийг хязгааргүй үзэх',
-                'HD ба 4K дүрсний чанар',
-                'Зар сурталчилгаагүй',
-                'Шинэ бичлэгүүд шууд үзэх'
-            ],
-            color: 'from-amber-500 to-yellow-500'
-        },
-        { 
-            id: 'nsfw', 
-            title: '18+ VIP БАГЦ', 
-            icon: Sparkles, 
-            features: [
-                '18+ тусгай бүх эксклюзив видеонууд',
-                'Хязгааргүй шууд үзэх',
-                '4K Ultra HD чанар',
-                'Тусгай эксклюзив агуулга'
-            ],
-            color: 'from-rose-500 to-red-500'
-        }
-    ];
-
-    const filteredPlans = plans.filter(p => {
-        if (selectedCategory === 'nsfw') return p.is_nsfw;
-        return !p.is_nsfw;
-    });
-
     return (
         <div className="w-full relative py-12 min-h-screen overflow-hidden text-white bg-[#0a0610]">
-            {/* Background elements */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+            {/* Background glow elements */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-600/10 blur-[140px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute bottom-0 right-1/4 w-[600px] h-[300px] bg-amber-500/10 blur-[140px] rounded-full pointer-events-none -z-10" />
 
-            <div className="max-w-7xl mx-auto px-4 relative z-10">
-                <AnimatePresence mode="wait">
-                    {step === 1 ? (
-                        <motion.div
-                            key="step1"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05 }}
-                            transition={{ duration: 0.4, ease: "easeOut" }}
-                            className="flex flex-col items-center"
+            <div className="max-w-6xl mx-auto px-4 relative z-10 space-y-12">
+                {/* Header */}
+                <div className="text-center space-y-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-black text-xs uppercase tracking-widest">
+                        <Crown className="w-4 h-4 fill-amber-400" /> VIP ГИШҮҮНЧЛЭЛ
+                    </div>
+                    <h1 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tight">
+                        Хязгааргүй Бүх 18+ Видеонуудыг Үзэх
+                    </h1>
+                    <p className="text-sm text-zinc-400 max-w-xl mx-auto font-medium">
+                        VIP эрх авснаар манай платформын бүх бичлэгүүдийг 4K Ultra HD чанараар заргүй шууд үзэх боломжтой болно.
+                    </p>
+                </div>
+
+                {/* VIP Subscription Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+                    {plans.map((plan) => (
+                        <div
+                            key={plan.id}
+                            className={cn(
+                                "relative group rounded-3xl p-8 border transition-all duration-500 flex flex-col justify-between h-full",
+                                "bg-zinc-900/80 backdrop-blur-2xl border-white/10 hover:border-red-600/50 shadow-2xl",
+                                plan.is_recommended && "ring-2 ring-amber-500/50 border-amber-500/30 shadow-amber-500/10"
+                            )}
                         >
-                            <div className="text-center mb-16 relative z-10 px-4">
-                                <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight uppercase">
-                                    Эрх сунгах багцаа сонгоно уу
-                                </h2>
-                            </div>
+                            {plan.is_recommended && (
+                                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black text-[10px] uppercase tracking-widest shadow-lg">
+                                    ⭐ Санал болгох
+                                </div>
+                            )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                                {categories.map((cat: any) => (
-                                    <div
-                                        key={cat.id}
-                                        className="relative group rounded-3xl p-8 border border-white/10 transition-all duration-500 flex flex-col items-center text-center bg-zinc-900/80 backdrop-blur-2xl hover:border-red-600/50 hover:scale-[1.02] shadow-2xl"
-                                    >
-                                        <div className="relative z-10 w-full flex flex-col items-center">
-                                            <div className="mb-8 p-6 rounded-3xl bg-white/5 border border-white/10 group-hover:border-red-600/30 transition-all">
-                                                <cat.icon className="w-14 h-14 text-amber-400 group-hover:scale-110 transition-transform duration-500" />
-                                            </div>
-
-                                            <h3 className="text-2xl font-black text-white mb-6 uppercase tracking-tight">
-                                                {cat.title}
-                                            </h3>
-
-                                            <div className="space-y-3.5 mb-10 w-full">
-                                                {cat.features.map((feature: any, i: number) => (
-                                                    <div key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-300 uppercase tracking-tight">
-                                                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                                                        <span>{feature}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedCategory(cat.id as any);
-                                                    setStep(2);
-                                                }}
-                                                className="w-full py-4 rounded-2xl font-black uppercase tracking-wider text-xs transition-all bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 hover:scale-105 active:scale-95 cursor-pointer"
-                                            >
-                                                Сонгох
-                                            </button>
-                                        </div>
+                            <div className="space-y-6">
+                                <div className="space-y-2 text-center border-b border-white/10 pb-6">
+                                    <h3 className="text-xl font-black text-white uppercase">{plan.title}</h3>
+                                    <div className="flex items-baseline justify-center gap-1">
+                                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight font-mono">
+                                            {(Number(plan.price)).toLocaleString()}₮
+                                        </span>
+                                        <span className="text-xs text-zinc-400 font-bold uppercase">
+                                            / {formatDuration(plan.duration_value, plan.duration_unit)}
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="step2"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.4, ease: "easeOut" }}
-                        >
-                            <div className="flex items-center gap-4 mb-12">
-                                <button 
-                                    onClick={() => setStep(1)}
-                                    className="p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group cursor-pointer"
-                                >
-                                    <ArrowLeft className="w-6 h-6 text-white group-hover:-translate-x-1 transition-transform" />
-                                </button>
-                                <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest">
-                                    {selectedCategory === 'standard' ? '👑 VIP БАГЦ' : '🔥 18+ VIP БАГЦ'} /ТӨЛБӨР ТӨЛӨХ/
-                                </h2>
-                            </div>
+                                </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                                {filteredPlans.map((plan) => (
-                                    <div
-                                        key={plan.id}
-                                        className={cn(
-                                            "relative group rounded-3xl p-8 border transition-all duration-500 flex flex-col h-full",
-                                            "bg-zinc-900/80 backdrop-blur-2xl border-white/10 hover:border-red-600/50 shadow-2xl",
-                                            plan.is_recommended && "ring-2 ring-amber-500/50 border-amber-500/30"
-                                        )}
-                                    >
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div>
-                                                <h3 className="text-xl font-black text-white uppercase mb-1">{plan.title}</h3>
-                                                <p className="text-xs text-zinc-400 font-bold uppercase">{formatDuration(plan.duration_value, plan.duration_unit)}</p>
-                                            </div>
-                                            <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono font-black text-xs">
-                                                {(Number(plan.price)).toLocaleString()}₮
-                                            </div>
+                                <div className="space-y-3">
+                                    {plan.features.map((feat, i) => (
+                                        <div key={i} className="flex items-center gap-3 text-xs font-semibold text-zinc-300">
+                                            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                                            <span>{feat}</span>
                                         </div>
-
-                                        <div className="space-y-3 my-6 flex-1">
-                                            {plan.features.map((feat, i) => (
-                                                <div key={i} className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                                                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                                                    <span>{feat}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <button
-                                            onClick={() => handleSelectPlan(plan)}
-                                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-red-600/20 hover:scale-105 transition-all cursor-pointer"
-                                        >
-                                            Төлбөр төлөх
-                                        </button>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
+                            <button
+                                onClick={() => handleSelectPlan(plan)}
+                                className={cn(
+                                    "w-full mt-8 py-4 rounded-2xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg",
+                                    plan.is_recommended
+                                        ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:bg-amber-400 shadow-amber-500/20"
+                                        : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:bg-red-500 shadow-red-600/20"
+                                )}
+                            >
+                                VIP Эрх Авах
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Payment Modal */}
@@ -408,7 +317,7 @@ export function PricingPlans() {
                                         {qpayData.qr_image ? (
                                             <img src={`data:image/png;base64,${qpayData.qr_image}`} alt="QPay QR" className="w-full h-full object-contain" />
                                         ) : (
-                                            <QrCode className="w-24 h-24 text-black" />
+                                            <QrCode className="w-24 h-24 text-[#0a0610]" />
                                         )}
                                     </div>
 
