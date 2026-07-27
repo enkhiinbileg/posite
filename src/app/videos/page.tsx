@@ -105,20 +105,20 @@ export default function VideosPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#f8f8f8] flex flex-col items-center justify-center gap-4 text-zinc-800">
-                <Loader2 className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin text-amber-500" />
-                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Loading...</p>
+            <div className="min-h-screen bg-[#0a0610] flex flex-col items-center justify-center gap-4 text-white">
+                <Loader2 className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin text-red-600" />
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Ачаалж байна...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#f8f8f8] text-zinc-900 pt-[68px] pb-24 font-sans">
+        <div className="min-h-screen bg-[#0a0610] text-white pt-[68px] pb-24 font-sans">
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
 
-                {/* 1. MOST POPULAR CATEGORIES SECTION (Exact FUQ 6-Column Grid) */}
+                {/* 1. MOST POPULAR CATEGORIES SECTION (Dark Mode 6-Column Grid) */}
                 <section className="space-y-4">
-                    <h2 className="text-xl font-bold tracking-tight text-zinc-900">
+                    <h2 className="text-xl font-black tracking-tight text-white uppercase">
                         Most Popular Categories
                     </h2>
 
@@ -129,18 +129,18 @@ export default function VideosPage() {
                                 href={`/videos?category=${encodeURIComponent(cat.name)}`}
                                 className="group block space-y-1.5 cursor-pointer"
                             >
-                                <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-zinc-200 shadow-sm border border-zinc-200">
+                                <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-white/5 shadow-md border border-white/10 group-hover:border-red-600/50 transition-all">
                                     <img 
                                         src={cat.image} 
                                         alt={cat.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
                                     />
                                     {/* Bottom-left View Count Badge */}
-                                    <div className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-white/10">
+                                    <div className="absolute bottom-1.5 left-1.5 bg-black/80 backdrop-blur-md text-amber-400 font-mono font-black text-[10px] px-2 py-0.5 rounded-md border border-amber-500/20 shadow">
                                         {cat.count}
                                     </div>
                                 </div>
-                                <h3 className="text-xs font-bold text-zinc-800 group-hover:text-red-600 truncate transition-colors">
+                                <h3 className="text-xs font-bold text-zinc-300 group-hover:text-red-500 truncate transition-colors">
                                     {cat.name}
                                 </h3>
                             </Link>
@@ -148,10 +148,10 @@ export default function VideosPage() {
                     </div>
                 </section>
 
-                {/* 2. POV VIDEOS SECTION (Exact FUQ 5-Column Video Grid) */}
-                <section className="space-y-4 pt-4 border-t border-zinc-200">
+                {/* 2. POV VIDEOS SECTION (Dark Mode 5-Column Video Grid) */}
+                <section className="space-y-4 pt-6 border-t border-white/10">
                     <div className="flex items-baseline gap-2">
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-900 font-sans">
+                        <h2 className="text-xl font-black tracking-tight text-white uppercase font-sans">
                             POV (Point Of View) Videos
                         </h2>
                         <span className="text-xs font-semibold text-zinc-400 font-sans">
@@ -165,19 +165,19 @@ export default function VideosPage() {
                             {['Date added', 'Duration', 'Quality', 'VR', 'Source'].map((filterName) => (
                                 <button
                                     key={filterName}
-                                    className="px-3.5 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                                    className="px-3.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                                 >
                                     <span>{filterName}</span>
-                                    <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+                                    <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                                 </button>
                             ))}
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
                             <span>Sort by :</span>
-                            <button className="flex items-center gap-1 font-bold text-zinc-900 hover:text-red-600 cursor-pointer">
+                            <button className="flex items-center gap-1 font-bold text-white hover:text-red-500 cursor-pointer">
                                 <span>Popularity</span>
-                                <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+                                <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </button>
                         </div>
                     </div>
