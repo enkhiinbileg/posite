@@ -174,7 +174,7 @@ export function NetflixLanding({ webtoons }: NetflixLandingProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                     >
-                        <img src="/logo.png" alt="MyToon" className="h-12 lg:h-16 object-contain" />
+                        <img src="/logo.png" alt="POM" className="h-12 lg:h-16 object-contain" />
                     </motion.div>
 
                     <div className="flex-1 flex flex-col justify-center">
@@ -185,8 +185,8 @@ export function NetflixLanding({ webtoons }: NetflixLandingProps) {
                             className="max-w-2xl"
                         >
                             <h1 className="text-6xl lg:text-8xl font-[900] italic tracking-tighter leading-none mb-6 drop-shadow-2xl">
-                                <span className="text-white">MY</span>
-                                <span className="text-primary">TOON.</span>
+                                <span className="text-white">POM</span>
+                                <span className="text-primary">.SITE</span>
                             </h1>
                             <p className="text-xl lg:text-2xl text-white/60 mb-10 font-medium">
                                 Хаана ч, хэзээ ч. Дуртай вэбтүүнээ уншиж эхлээрэй.
@@ -393,7 +393,7 @@ export function NetflixLanding({ webtoons }: NetflixLandingProps) {
                 {/* Footer Minimal Link */}
                 <div className="mt-12">
                     <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest text-center">
-                        © 2026 MYTOON INC. БҮХ ЭРХ ХУУЛИАР ХАМГААЛАГДСАН.
+                        © 2026 POM.SITE. БҮХ ЭРХ ХУУЛИАР ХАМГААЛАГДСАН.
                     </p>
                 </div>
             </div>

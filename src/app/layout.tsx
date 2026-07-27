@@ -39,8 +39,8 @@ const firaSans = Fira_Sans({ weight: ["400", "700"], subsets: ["latin", "cyrilli
 const balsamiq = Balsamiq_Sans({ weight: "400", subsets: ["latin", "cyrillic"], variable: "--font-balsamiq" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fuq.site"),
-  title: "FUQ - 18+ Видео Платформ",
+  metadataBase: new URL("https://pom.site"),
+  title: "POM - 18+ Видео Платформ",
   description: "Хамгийн халуухан 18+ видеонуудыг 4K ба Full HD чанараар хүлээн авч үзээрэй.",
   manifest: "/manifest.json",
   icons: {
@@ -51,21 +51,21 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "FUQ",
+    title: "POM",
   },
   other: {
-    "google-site-verification": "verification_token", // Add actual token later if available
+    "google-site-verification": "verification_token",
   },
 };
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "MyToon",
-  "url": "https://mytoon.site", // Actual domain
+  "name": "POM",
+  "url": "https://pom.site",
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://mytoon.site/?q={search_term_string}",
+    "target": "https://pom.site/?q={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 };

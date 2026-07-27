@@ -261,10 +261,10 @@ export function Navbar() {
             <header className="fixed top-0 z-50 w-full bg-[#0d0914]/95 border-b border-white/10 backdrop-blur-md text-white px-4 lg:px-8 py-2.5 shadow-md">
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-6 lg:gap-8">
-                        {/* FUQ Logo */}
+                        {/* POM Logo */}
                         <Link href="/videos" className="flex items-center group">
                             <span className="font-black italic text-3xl tracking-tighter uppercase text-[#f3b509] font-sans drop-shadow">
-                                FUQ
+                                POM
                             </span>
                         </Link>
 

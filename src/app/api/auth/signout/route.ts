@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const cookieStore = await cookies()
     const allCookies = cookieStore.getAll()
     const host = request.headers.get('host') || '';
-    const cookieDomain = host.includes('mytoon.site') ? '.mytoon.site' : undefined;
+    const cookieDomain = host.includes('pom.site') ? '.pom.site' : undefined;
     
     allCookies.forEach(cookie => {
         if (cookie.name.includes('supabase-auth-token') || cookie.name.includes('sb-')) {

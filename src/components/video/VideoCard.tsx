@@ -16,7 +16,7 @@ export function VideoCard({ video }: VideoCardProps) {
     const ratingPercent = video.rating || (Math.abs(video.id?.charCodeAt(0) || 75) % 30) + 70;
     const is4K = (video.id?.charCodeAt(0) || 0) % 2 === 0;
     const qualityTag = is4K ? "4K" : "HD";
-    const sourceName = video.uploader_name || "FUQ.com";
+    const sourceName = video.uploader_name || "POM.SITE";
 
     return (
         <div className="group flex flex-col gap-1.5 cursor-pointer select-none">
