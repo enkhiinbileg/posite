@@ -357,32 +357,35 @@ export function PricingPlans() {
                                 <div className="space-y-4 bg-white/5 border border-white/10 p-5 rounded-2xl">
                                     <div className="space-y-3 text-xs">
                                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                            <span className="text-zinc-400 font-bold uppercase">Банкны нэр:</span>
-                                            <span className="font-bold text-white flex items-center gap-1.5">
-                                                <Building2 className="w-4 h-4 text-green-500" /> Хаан Банк (Khan Bank)
-                                            </span>
+                                            <span className="text-zinc-400 font-bold uppercase">Данс эзэмшигч:</span>
+                                            <span className="font-extrabold text-amber-400 text-sm">Нямдорж Энхийнбилэг</span>
                                         </div>
 
                                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                            <span className="text-zinc-400 font-bold uppercase">Дансны дугаар:</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-mono font-black text-white text-sm">5021234567</span>
-                                                <button onClick={() => copyToClipboard("5021234567", "Дансны дугаар")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer">
-                                                    <Copy className="w-3 h-3" /> Хуулах
-                                                </button>
+                                            <div className="space-y-0.5">
+                                                <span className="text-zinc-400 font-bold uppercase block">Хаан Банк:</span>
+                                                <span className="font-mono font-black text-white text-sm">5954613802</span>
                                             </div>
+                                            <button onClick={() => copyToClipboard("5954613802", "Хаан банкны данс")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+                                                <Copy className="w-3 h-3" /> Хуулах
+                                            </button>
                                         </div>
 
                                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                            <span className="text-zinc-400 font-bold uppercase">Дансны нэр:</span>
-                                            <span className="font-bold text-white">MyToon LLC</span>
+                                            <div className="space-y-0.5">
+                                                <span className="text-zinc-400 font-bold uppercase block">Бусад Банк (Голомт/Төрийн):</span>
+                                                <span className="font-mono font-black text-white text-sm">48000500</span>
+                                            </div>
+                                            <button onClick={() => copyToClipboard("48000500", "Бусад банкны данс")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+                                                <Copy className="w-3 h-3" /> Хуулах
+                                            </button>
                                         </div>
 
                                         <div className="flex justify-between items-center pt-1">
                                             <span className="text-zinc-400 font-bold uppercase">Гүйлгээний утга:</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="font-mono font-black text-amber-400 text-sm">{getPaymentMemo()}</span>
-                                                <button onClick={() => copyToClipboard(getPaymentMemo(), "Гүйлгээний утга")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                                                <button onClick={() => copyToClipboard(getPaymentMemo(), "Гүйлгээний утга")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
                                                     <Copy className="w-3 h-3" /> Хуулах
                                                 </button>
                                             </div>
