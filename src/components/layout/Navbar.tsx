@@ -279,8 +279,8 @@ export function Navbar() {
                             <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
                                 Одод & Моделууд <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
-                            <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
-                                Бусад <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                            <Link href="/vip" className="text-amber-400 hover:text-amber-300 flex items-center gap-1.5 transition-colors font-extrabold">
+                                <Crown className="w-4 h-4 fill-amber-400 text-amber-400" /> Багц ба Үнэ
                             </Link>
                         </nav>
                     </div>
