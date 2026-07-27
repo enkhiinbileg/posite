@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { getUser8DigitId } from "@/lib/user-id";
 
 const ICONS = { Zap, Crown, Star, Layout, List, Sparkles, Gem, Ghost, Film };
 
@@ -159,8 +160,8 @@ export function PricingPlans() {
     };
 
     const getPaymentMemo = () => {
-        const identifier = profile?.unique_id || profile?.username || user?.id || '';
-        return `PM ${identifier}`.trim();
+        const id8 = getUser8DigitId(user, profile);
+        return `PM ${id8}`;
     };
 
     const formatDuration = (val: number, unit: string) => {
