@@ -427,8 +427,23 @@ export default function AdminVideosPage() {
                         <div className="col-span-full flex justify-center py-20"><Loader2 className="w-10 h-10 text-primary animate-spin" /></div>
                     ) : videos.map((video) => (
                         <div key={video.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 group">
-                            <div className="relative aspect-video rounded-2xl overflow-hidden mb-4">
-                                <img src={video.thumbnail_url} className="w-full h-full object-cover" alt="" />
+                            <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 bg-zinc-900 flex items-center justify-center border border-white/5">
+                                {video.thumbnail_url ? (
+                                    <img 
+                                        src={video.thumbnail_url} 
+                                        onError={(e) => { 
+                                            (e.target as HTMLImageElement).onerror = null;
+                                            (e.target as HTMLImageElement).src = '/logo.png'; 
+                                        }}
+                                        className="w-full h-full object-cover" 
+                                        alt={video.title} 
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-950 p-4 text-center">
+                                        <Film className="w-10 h-10 text-white/20 mb-2" />
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{video.title}</span>
+                                    </div>
+                                )}
                                 {video.is_free ? (
                                     <div className="absolute top-3 left-3 px-3 py-1 bg-emerald-500 rounded-lg text-[9px] font-black text-white uppercase tracking-wider shadow-lg">🆓 Үнэгүй</div>
                                 ) : (
