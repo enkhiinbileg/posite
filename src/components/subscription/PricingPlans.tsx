@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
     Check, Crown, Zap, Star, X, Copy, Sparkles, 
-    Loader2, QrCode, CreditCard, Film, ShieldCheck 
+    Loader2, QrCode, CreditCard, Film, ShieldCheck, Building2, ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -78,6 +78,9 @@ export function PricingPlans() {
     const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
     const [loading, setLoading] = useState(false);
     
+    // Modal Payment Method Tabs: 'qpay' | 'bank'
+    const [activeModalTab, setActiveModalTab] = useState<'qpay' | 'bank'>('qpay');
+    
     // QPay States
     const [paymentMethod, setPaymentMethod] = useState<'manual' | 'qpay' | null>(null);
     const [qpayData, setQpayData] = useState<any>(null);
@@ -99,9 +102,9 @@ export function PricingPlans() {
         }
     }
 
-    const copyToClipboard = (text: string) => {
+    const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
-        toast.success("Хуулагдлаа!");
+        toast.success(`${label} хуулагдлаа!`);
     };
 
     const handleSelectPlan = (plan: PricingPlan) => {
@@ -110,6 +113,7 @@ export function PricingPlans() {
             return;
         }
         setSelectedPlan(plan);
+        setActiveModalTab('qpay');
         setPaymentMethod(null);
         setQpayData(null);
     };
@@ -264,7 +268,7 @@ export function PricingPlans() {
                 </div>
             </div>
 
-            {/* Payment Modal */}
+            {/* Payment Modal with 2 Clear Options: QPay vs Bank Transfer */}
             <AnimatePresence>
                 {selectedPlan && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -286,50 +290,108 @@ export function PricingPlans() {
                                 <p className="text-sm text-amber-400 font-bold font-mono">{(Number(selectedPlan.price)).toLocaleString()}₮</p>
                             </div>
 
-                            {/* QPay Section */}
-                            {!paymentMethod && (
-                                <div className="space-y-3 pt-4">
-                                    <button
-                                        onClick={handleQPayCreate}
-                                        disabled={loading}
-                                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-lg cursor-pointer"
-                                    >
-                                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
-                                        <span>QPay-ээр төлөх</span>
-                                    </button>
+                            {/* 2 Clear Payment Method Tabs: QPay vs Bank Transfer */}
+                            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/5 border border-white/10">
+                                <button
+                                    onClick={() => { setActiveModalTab('qpay'); setPaymentMethod(null); }}
+                                    className={cn(
+                                        "py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
+                                        activeModalTab === 'qpay'
+                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                                            : "text-zinc-400 hover:text-white"
+                                    )}
+                                >
+                                    <QrCode className="w-4 h-4" /> QPay-ээр төлөх
+                                </button>
+                                <button
+                                    onClick={() => setActiveModalTab('bank')}
+                                    className={cn(
+                                        "py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer",
+                                        activeModalTab === 'bank'
+                                            ? "bg-amber-500 text-black shadow-lg shadow-amber-500/30"
+                                            : "text-zinc-400 hover:text-white"
+                                    )}
+                                >
+                                    <CreditCard className="w-4 h-4" /> Дансаар төлөх
+                                </button>
+                            </div>
 
-                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                                        <p className="text-xs font-bold text-zinc-400 uppercase">Банкны дансаар төлөх (Гүйлгээний утга):</p>
-                                        <div className="flex items-center justify-between bg-black/50 p-3 rounded-xl border border-white/10">
-                                            <span className="font-mono font-black text-amber-400 text-sm">{getPaymentMemo()}</span>
-                                            <button onClick={() => copyToClipboard(getPaymentMemo())} className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-bold cursor-pointer">
-                                                <Copy className="w-3.5 h-3.5" /> Хуулах
+                            {/* TAB 1: QPay Payment */}
+                            {activeModalTab === 'qpay' && (
+                                <div className="space-y-4">
+                                    {!qpayData ? (
+                                        <button
+                                            onClick={handleQPayCreate}
+                                            disabled={loading}
+                                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-lg cursor-pointer"
+                                        >
+                                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
+                                            <span>📱 QPay QR код үүсгэх</span>
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4 text-center">
+                                            <div className="bg-white p-4 rounded-2xl w-48 h-48 mx-auto flex items-center justify-center border-4 border-amber-400 shadow-xl">
+                                                {qpayData.qr_image ? (
+                                                    <img src={`data:image/png;base64,${qpayData.qr_image}`} alt="QPay QR" className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <QrCode className="w-24 h-24 text-[#0a0610]" />
+                                                )}
+                                            </div>
+
+                                            <p className="text-xs text-zinc-400 font-bold">Банкны апп-аараа уншуулж гүйлгээгээ хийнэ үү</p>
+
+                                            <button
+                                                onClick={checkQPayStatus}
+                                                disabled={isCheckingPayment}
+                                                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                                            >
+                                                {isCheckingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "Төлбөр шалгах"}
                                             </button>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             )}
 
-                            {/* Active QPay QR Screen */}
-                            {paymentMethod === 'qpay' && qpayData && (
-                                <div className="space-y-4 pt-2 text-center">
-                                    <div className="bg-white p-4 rounded-2xl w-48 h-48 mx-auto flex items-center justify-center border-4 border-amber-400 shadow-xl">
-                                        {qpayData.qr_image ? (
-                                            <img src={`data:image/png;base64,${qpayData.qr_image}`} alt="QPay QR" className="w-full h-full object-contain" />
-                                        ) : (
-                                            <QrCode className="w-24 h-24 text-[#0a0610]" />
-                                        )}
+                            {/* TAB 2: Direct Bank Transfer */}
+                            {activeModalTab === 'bank' && (
+                                <div className="space-y-4 bg-white/5 border border-white/10 p-5 rounded-2xl">
+                                    <div className="space-y-3 text-xs">
+                                        <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                            <span className="text-zinc-400 font-bold uppercase">Банкны нэр:</span>
+                                            <span className="font-bold text-white flex items-center gap-1.5">
+                                                <Building2 className="w-4 h-4 text-green-500" /> Хаан Банк (Khan Bank)
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                            <span className="text-zinc-400 font-bold uppercase">Дансны дугаар:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-black text-white text-sm">5021234567</span>
+                                                <button onClick={() => copyToClipboard("5021234567", "Дансны дугаар")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                                                    <Copy className="w-3 h-3" /> Хуулах
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                            <span className="text-zinc-400 font-bold uppercase">Дансны нэр:</span>
+                                            <span className="font-bold text-white">MyToon LLC</span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pt-1">
+                                            <span className="text-zinc-400 font-bold uppercase">Гүйлгээний утга:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-black text-amber-400 text-sm">{getPaymentMemo()}</span>
+                                                <button onClick={() => copyToClipboard(getPaymentMemo(), "Гүйлгээний утга")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                                                    <Copy className="w-3 h-3" /> Хуулах
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <p className="text-xs text-zinc-400 font-bold">QPay эсвэл Банкны апп-аараа уншуулж төлнө үү</p>
-
-                                    <button
-                                        onClick={checkQPayStatus}
-                                        disabled={isCheckingPayment}
-                                        className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-                                    >
-                                        {isCheckingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "Төлбөр шалгах"}
-                                    </button>
+                                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-300 font-semibold leading-relaxed">
+                                        ⚠️ <strong>Анхаар:</strong> Гүйлгээний утгаа заавал <strong>"{getPaymentMemo()}"</strong> гэж яг зөв оруулаарай. Төлбөр хийгдсэний дараа таны VIP эрх 1-3 минутад автоматаар идэвхжнэ.
+                                    </div>
                                 </div>
                             )}
                         </motion.div>
