@@ -1,0 +1,38 @@
+[
+  {
+    "id": "vip-1-month",
+    "title": "VIP 1 Сар",
+    "price": 19900,
+    "duration_value": 1,
+    "duration_unit": "months",
+    "features": [
+      "Бүх VIP бичлэгүүдийг үзэх",
+      "HD ба 4K дүрсний чанар",
+      "Зар сурталчилгаагүй"
+    ],
+    "is_recommended": true,
+    "is_nsfw": false,
+    "icon_name": "Crown",
+    "color_preset": "from-amber-500 to-yellow-500",
+    "order_index": 1,
+    "updated_at": "2026-07-27T14:55:00.000Z"
+  },
+  {
+    "id": "vip-18-1-month",
+    "title": "18+ VIP 1 Сар",
+    "price": 29900,
+    "duration_value": 1,
+    "duration_unit": "months",
+    "features": [
+      "18+ тусгай бүх бичлэгүүд",
+      "Хязгааргүй шууд үзэх",
+      "4K Ultra HD чанар"
+    ],
+    "is_recommended": false,
+    "is_nsfw": true,
+    "icon_name": "Crown",
+    "color_preset": "from-rose-500 to-red-500",
+    "order_index": 2,
+    "updated_at": "2026-07-27T14:55:00.000Z"
+  }
+]
