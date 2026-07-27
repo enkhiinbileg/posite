@@ -78,53 +78,54 @@ export default function AdminVideosPage() {
         };
         videoEl.src = objectUrl;
 
-        // Upload via pre-signed URL direct to R2 (bypasses server memory limits for large videos)
-        toast.info("Бичлэг R2-руу байршуулж байна...");
+        toast.info("Бичлэгийг Cloudflare Stream руу байршуулж байна (TUS)...");
         setUploadProgress(1);
-        try {
-            const { getPresignedUrl } = await import("@/lib/r2");
-            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-            const filePath = `videos/${fileName}`;
-            const contentType = file.type || 'video/mp4';
 
-            const res = await getPresignedUrl(filePath, contentType);
-            if (!res.success || !res.url) {
-                toast.error("Бичлэг байршуулах хаяг үүсгэж чадсангүй!");
+        try {
+            // 1. Get the one-time TUS upload URL from our backend
+            const res = await fetch('/api/stream-upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uploadLength: file.size })
+            });
+            const data = await res.json();
+            
+            if (!res.ok || !data.uploadUrl) {
+                toast.error("Cloudflare хаяг авч чадсангүй: " + (data.error || 'Unknown error'));
                 setUploadProgress(0);
                 return;
             }
 
-            const xhr = new XMLHttpRequest();
-            // Send to our proxy to bypass CORS and avoid Next.js memory limits!
-            xhr.open('PUT', '/api/proxy-upload');
-            xhr.setRequestHeader('x-target-url', res.url);
-            xhr.setRequestHeader('Content-Type', contentType);
-
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    setUploadProgress(Math.round((event.loaded / event.total) * 100));
-                }
-            };
-
-            xhr.onload = () => {
-                setUploadProgress(0);
-                if (xhr.status === 200 && res.publicUrl) {
-                    setFormData(prev => ({ ...prev, video_url: res.publicUrl! }));
+            // 2. Upload using tus-js-client for resumable, large uploads
+            const { Upload } = await import("tus-js-client");
+            
+            const upload = new Upload(file, {
+                uploadUrl: data.uploadUrl,
+                chunkSize: 50 * 1024 * 1024, // 50MB chunks
+                retryDelays: [0, 3000, 5000, 10000, 20000],
+                metadata: {
+                    filename: file.name,
+                    filetype: file.type
+                },
+                onError: function (error) {
+                    console.error("TUS error:", error);
+                    toast.error("Байршуулахад алдаа: " + error.message);
+                    setUploadProgress(0);
+                },
+                onProgress: function (bytesUploaded, bytesTotal) {
+                    const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
+                    setUploadProgress(percentage);
+                },
+                onSuccess: function () {
+                    // Store the Cloudflare UID in the database instead of the R2 URL
+                    setFormData(prev => ({ ...prev, video_url: data.uid }));
                     setVideoReady(true);
-                    toast.success("✓ Бичлэг R2-д амжилттай хадгалагдлаа!");
-                } else {
-                    let err = xhr.statusText;
-                    try { err = JSON.parse(xhr.responseText).error || err; } catch(e){}
-                    toast.error(`Бичлэг хуулахад алдаа: ${err}`);
+                    setUploadProgress(0);
+                    toast.success("✓ Бичлэг Cloudflare-д амжилттай хадгалагдлаа!");
                 }
-            };
+            });
 
-            xhr.onerror = () => {
-                setUploadProgress(0);
-                toast.error("Бичлэг байршуулахад сүлжээний алдаа гарлаа.");
-            };
-
-            xhr.send(file);
+            upload.start();
         } catch (error: any) {
             setUploadProgress(0);
             toast.error("Бичлэг байршуулахад алдаа: " + error.message);

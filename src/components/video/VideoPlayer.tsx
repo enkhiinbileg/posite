@@ -61,7 +61,13 @@ export function VideoPlayer({ videoUrl, hasAccess, onPurchaseClick, thumbnail, l
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
+    const isCloudflareStream = (url: string) => {
+        // Cloudflare Stream UIDs are exactly 32 hex characters
+        return /^[a-f0-9]{32}$/i.test(url);
+    };
+
     const youtubeId = getYoutubeId(videoUrl);
+    const cfStreamId = isCloudflareStream(videoUrl) ? videoUrl : null;
 
     return (
         <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-black group shadow-2xl border border-white/5">
@@ -84,8 +90,15 @@ export function VideoPlayer({ videoUrl, hasAccess, onPurchaseClick, thumbnail, l
                 youtubeId ? (
                     <iframe
                         src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&modestbranding=1&rel=0`}
-                        className="w-full h-full"
+                        className="w-full h-full border-none"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    />
+                ) : cfStreamId ? (
+                    <iframe
+                        src={`https://iframe.videodelivery.net/${cfStreamId}?autoplay=true&poster=${encodeURIComponent(thumbnail)}`}
+                        className="w-full h-full border-none"
+                        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                         allowFullScreen
                     />
                 ) : (
