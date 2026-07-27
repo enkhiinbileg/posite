@@ -40,9 +40,11 @@ export default function AdminVideosPage() {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const [categories, setCategories] = useState<any[]>([]);
+
     useEffect(() => {
         fetchVideos();
-        fetchWebtoons();
+        fetchCategories();
     }, []);
 
     async function fetchVideos() {
@@ -51,10 +53,10 @@ export default function AdminVideosPage() {
         setLoading(false);
     }
 
-    async function fetchWebtoons() {
-        const { getWebtoonsAction } = await import("@/app/actions/webtoon-actions");
-        const res = await getWebtoonsAction();
-        if (res.success) setWebtoons(res.data || []);
+    async function fetchCategories() {
+        const { getAllCategoriesAdminAction } = await import("@/app/actions/category-actions");
+        const res = await getAllCategoriesAdminAction();
+        if (res.success && res.data) setCategories(res.data);
     }
 
 
@@ -320,23 +322,9 @@ export default function AdminVideosPage() {
                                             className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all cursor-pointer font-bold text-sm"
                                         >
                                             <option value="" className="bg-zinc-900 text-zinc-400">Сонгох...</option>
-                                            {[
-                                                "Japanese",
-                                                "Asian",
-                                                "Amateur",
-                                                "Hentai",
-                                                "Anal",
-                                                "Hardcore",
-                                                "Cosplay",
-                                                "POV",
-                                                "MILF",
-                                                "Friend",
-                                                "VR",
-                                                "Celebrity",
-                                                "Бусад"
-                                            ].map((cat) => (
-                                                <option key={cat} value={cat} className="bg-zinc-900 text-white font-bold">
-                                                    {cat}
+                                            {categories.map((cat: any) => (
+                                                <option key={cat.id || cat.name} value={cat.name} className="bg-zinc-900 text-white font-bold">
+                                                    {cat.name}
                                                 </option>
                                             ))}
                                         </select>
