@@ -88,10 +88,11 @@ export default function VideoDetailPage() {
 
     const hasAccess = video.is_free || isVipUser || video.hasAccess;
     const { clean: cleanDesc, tags } = parseDescription(video.description || "");
-    const views = video.views || Math.floor(Math.random() * 9000000) + 100000;
-    const likes = Math.floor(views * 0.12);
-    const dislikes = Math.floor(views * 0.015);
-    const likePercent = Math.round((likes / (likes + dislikes)) * 100);
+    const views = video.views ?? 0;
+    const localLikes = video.likes ?? 0;
+    const localDislikes = video.dislikes ?? 0;
+    const totalVotes = localLikes + localDislikes;
+    const likePercent = totalVotes > 0 ? Math.round((localLikes / totalVotes) * 100) : null;
     const videoDate = video.created_at ? new Date(video.created_at) : new Date();
     const is4K = (video.id?.charCodeAt(0) || 0) % 2 === 0;
     const qualityTag = is4K ? "4K" : "HD";
@@ -181,7 +182,7 @@ export default function VideoDetailPage() {
                                         className={`flex items-center gap-2 px-4 py-2.5 rounded-l-full text-sm font-bold transition-all cursor-pointer border border-r-0 ${liked ? 'bg-[#ff9000] text-black border-[#ff9000]' : 'bg-zinc-800 hover:bg-zinc-700 text-white border-zinc-700'}`}
                                     >
                                         <ThumbsUp className={`w-4 h-4 ${liked ? 'fill-black' : ''}`} />
-                                        <span>{formatViews(likes + (liked ? 1 : 0))}</span>
+                                        <span>{liked ? '👍' : 'Таалагдлаа'}</span>
                                     </button>
                                     <div className="w-px h-8 bg-zinc-600" />
                                     <button
@@ -218,19 +219,21 @@ export default function VideoDetailPage() {
                                 </div>
                             </div>
 
-                            {/* Rating Bar (PornHub style) */}
-                            <div className="mt-3 space-y-1">
-                                <div className="flex items-center justify-between text-xs text-zinc-500 font-semibold">
-                                    <span className="flex items-center gap-1 text-zinc-300"><ThumbsUp className="w-3 h-3" /> {likePercent}%</span>
-                                    <span className="flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> {100 - likePercent}%</span>
+                            {/* Rating Bar - only show if real like data exists */}
+                            {likePercent !== null && (
+                                <div className="mt-3 space-y-1">
+                                    <div className="flex items-center justify-between text-xs text-zinc-500 font-semibold">
+                                        <span className="flex items-center gap-1 text-zinc-300"><ThumbsUp className="w-3 h-3" /> {likePercent}%</span>
+                                        <span className="flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> {100 - likePercent}%</span>
+                                    </div>
+                                    <div className="h-1 w-full bg-zinc-700 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-[#ff9000] to-[#ffb347] rounded-full transition-all"
+                                            style={{ width: `${likePercent}%` }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="h-1 w-full bg-zinc-700 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-[#ff9000] to-[#ffb347] rounded-full transition-all"
-                                        style={{ width: `${likePercent}%` }}
-                                    />
-                                </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* ======================== TAGS ======================== */}
@@ -362,7 +365,7 @@ export default function VideoDetailPage() {
 
 // ---- Related video card (grid, mobile) ----
 function RelatedCard({ video, onClick }: { video: any; onClick: () => void }) {
-    const views = video.views || Math.floor(Math.random() * 900000) + 10000;
+    const views = video.views ?? 0;
     const formatViews = (n: number) => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'K' : n.toString();
 
     return (
@@ -374,9 +377,6 @@ function RelatedCard({ video, onClick }: { video: any; onClick: () => void }) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                 />
-                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                    12:45
-                </div>
                 {!video.is_free && (
                     <div className="absolute top-1 right-1 bg-[#ff9000] text-black text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         <Crown className="w-2 h-2 fill-black" /> VIP
@@ -384,14 +384,14 @@ function RelatedCard({ video, onClick }: { video: any; onClick: () => void }) {
                 )}
             </div>
             <p className="text-xs font-semibold text-zinc-200 line-clamp-2 leading-snug group-hover:text-[#ff9000] transition-colors">{video.title}</p>
-            <p className="text-[10px] text-zinc-500">{formatViews(views)} үзэлт</p>
+            {views > 0 && <p className="text-[10px] text-zinc-500">{formatViews(views)} үзэлт</p>}
         </div>
     );
 }
 
 // ---- Related video card (sidebar, desktop) ----
 function RelatedSidebarCard({ video, onClick }: { video: any; onClick: () => void }) {
-    const views = video.views || Math.floor(Math.random() * 900000) + 10000;
+    const views = video.views ?? 0;
     const formatViews = (n: number) => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'K' : n.toString();
 
     return (
@@ -403,7 +403,6 @@ function RelatedSidebarCard({ video, onClick }: { video: any; onClick: () => voi
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                 />
-                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">12:45</div>
                 {!video.is_free && (
                     <div className="absolute top-1 right-1 bg-[#ff9000] text-black text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         <Crown className="w-2 h-2 fill-black" /> VIP
@@ -412,10 +411,12 @@ function RelatedSidebarCard({ video, onClick }: { video: any; onClick: () => voi
             </div>
             <div className="flex flex-col justify-center gap-1 min-w-0">
                 <p className="text-xs font-semibold text-zinc-200 line-clamp-2 leading-snug group-hover:text-[#ff9000] transition-colors">{video.title}</p>
-                <p className="text-[10px] text-zinc-500 flex items-center gap-1">
-                    <Eye className="w-3 h-3" />
-                    {formatViews(views)} үзэлт
-                </p>
+                {views > 0 && (
+                    <p className="text-[10px] text-zinc-500 flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        {formatViews(views)} үзэлт
+                    </p>
+                )}
             </div>
         </div>
     );
