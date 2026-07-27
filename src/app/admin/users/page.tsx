@@ -88,11 +88,11 @@ export default function AdminUsers() {
         if (user) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('is_admin, is_moderator')
+                .select('is_admin')
                 .eq('id', user.id)
                 .single();
 
-            if (!profile?.is_admin && !profile?.is_moderator) {
+            if (!profile?.is_admin) {
                 router.push("/admin");
                 toast.error("Танд энэ хэсэгт хандах эрх байхгүй!");
             }

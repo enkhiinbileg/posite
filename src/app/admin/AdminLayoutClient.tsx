@@ -60,7 +60,7 @@ export default function AdminLayoutClient({
         { label: "Бичлэгүүд (Videos)", icon: Film, href: "/admin/videos", roles: ["admin", "moderator"] },
         { label: "👑 VIP Багц ба Үнэ", icon: Crown, href: "/admin/vip-packages", roles: ["admin"] },
         { label: "Категориуд (Categories)", icon: Tag, href: "/admin/categories", roles: ["admin", "moderator"] },
-        { label: "Хэрэглэгчид ба Эрх", icon: Users, href: "/admin/users", roles: ["admin", "moderator"] },
+        { label: "Хэрэглэгчид ба Эрх", icon: Users, href: "/admin/users", roles: ["admin"] },
         { label: "Санхүү ба Төлбөр", icon: Wallet, href: "/admin/finance", roles: ["admin"] },
         { label: "Системийн Мэдэгдэл", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
     ];
