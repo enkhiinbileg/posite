@@ -5,8 +5,8 @@ const HARDCODED_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M
 
 // Create a direct client with the verified working service role key
 export function getSupabaseAdmin(): SupabaseClient {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || HARDCODED_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || HARDCODED_SERVICE_ROLE_KEY;
+    const url = HARDCODED_URL;
+    const key = HARDCODED_SERVICE_ROLE_KEY;
 
     return createClient(url, key, {
         auth: {
