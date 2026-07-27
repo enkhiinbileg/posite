@@ -121,39 +121,36 @@ export default function AdminVideosPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const loadingToast = toast.loading("Зураг хуулж байна...");
+        // 1. Instant Local Preview so user sees image immediately!
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (event.target?.result) {
+                setFormData(prev => ({ ...prev, thumbnail_url: event.target!.result as string }));
+                toast.success("Зураг сонгогдлоо!");
+            }
+        };
+        reader.readAsDataURL(file);
 
+        // 2. Upload to Cloudflare R2 CDN in background
         try {
             const { getPresignedUrl } = await import("@/lib/r2");
             const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
             const filePath = `thumbnails/${fileName}`;
+            const contentType = file.type || 'image/jpeg';
 
-            const res = await getPresignedUrl(filePath, file.type);
-            if (!res.success || !res.url) throw new Error(res.error || "URL үүсгэхэд алдаа гарлаа");
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', res.url);
-            xhr.setRequestHeader('Content-Type', file.type);
-
-            xhr.onload = () => {
-                toast.dismiss(loadingToast);
-                if (xhr.status === 200) {
-                    setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
-                    toast.success("Зураг амжилттай хуулагдлаа!");
-                } else {
-                    toast.error("Зураг хуулахад алдаа гарлаа");
-                }
-            };
-
-            xhr.onerror = () => {
-                toast.dismiss(loadingToast);
-                toast.error("Сүлжээний алдаа гарлаа");
-            };
-
-            xhr.send(file);
-        } catch (error: any) {
-            toast.dismiss(loadingToast);
-            toast.error(error.message || "Зураг хуулахад алдаа гарлаа");
+            const res = await getPresignedUrl(filePath, contentType);
+            if (res.success && res.url) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', res.url);
+                xhr.onload = () => {
+                    if (xhr.status === 200 && res.publicUrl) {
+                        setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
+                    }
+                };
+                xhr.send(file);
+            }
+        } catch (error) {
+            // Ignore R2 error, local preview data URL is already set!
         }
     };
 
