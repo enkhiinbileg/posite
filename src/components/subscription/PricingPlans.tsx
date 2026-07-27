@@ -373,10 +373,10 @@ export function PricingPlans() {
 
                                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
                                             <div className="space-y-0.5">
-                                                <span className="text-zinc-400 font-bold uppercase block">Бусад Банк (Голомт/Төрийн):</span>
+                                                <span className="text-zinc-400 font-bold uppercase block">IBAN дугаар:</span>
                                                 <span className="font-mono font-black text-white text-sm">48000500</span>
                                             </div>
-                                            <button onClick={() => copyToClipboard("48000500", "Бусад банкны данс")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+                                            <button onClick={() => copyToClipboard("48000500", "IBAN дугаар")} className="text-amber-400 hover:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
                                                 <Copy className="w-3 h-3" /> Хуулах
                                             </button>
                                         </div>
