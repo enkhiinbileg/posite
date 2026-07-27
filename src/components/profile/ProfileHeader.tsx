@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getLevelData } from "@/lib/leveling";
 import { cn } from "@/lib/utils";
 import { getCDNUrl } from "@/lib/storage-utils";
+import { getUser8DigitId } from "@/lib/user-id";
 
 interface ProfileHeaderProps {
     user: any;
@@ -140,11 +141,9 @@ export function ProfileHeader({ user, profile, onUpdate, onSignOut }: ProfileHea
 
                             <div className="flex items-center gap-2 justify-center md:justify-start mt-2 md:mt-3">
                                 <p className="text-muted text-xs md:text-sm font-medium">@{profile?.username || "username"}</p>
-                                {profile?.unique_id && (
-                                    <span className="text-[10px] font-mono text-white/30 bg-white/5 px-1.5 py-0.5 rounded select-all cursor-copy hover:bg-white/10 transition-colors">
-                                        #{profile.unique_id}
-                                    </span>
-                                )}
+                                <span className="text-xs font-mono font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg select-all cursor-copy hover:bg-amber-500/20 transition-all flex items-center gap-1 shadow-sm">
+                                    ID: #{getUser8DigitId(user, profile)}
+                                </span>
                             </div>
                         </div>
                     </div>

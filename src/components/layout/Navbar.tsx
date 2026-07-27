@@ -11,6 +11,7 @@ import { MilestonePopup } from "../ui/MilestonePopup";
 import { AuthModal } from "../auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { getUser8DigitId } from "@/lib/user-id";
 
 export function Navbar() {
     const { user, profile, loading: authLoading, refreshProfile } = useAuth();
@@ -396,7 +397,11 @@ export function Navbar() {
                                     )}>
                                         <div className="p-4 border-b border-white/5">
                                             <p className="text-sm font-bold text-white truncate">{user?.user_metadata?.full_name || user.email}</p>
-                                            <p className="text-xs text-muted truncate">{user.email}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-[10px] font-mono font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                                                    ID: #{getUser8DigitId(user, profile)}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="p-2">
