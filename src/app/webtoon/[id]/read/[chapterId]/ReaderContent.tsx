@@ -37,7 +37,7 @@ export async function ReaderContent({ id, chapterId }: Props) {
     const isNsfwVip = profile?.nsfw_vip_expiration 
         ? new Date(profile.nsfw_vip_expiration) > new Date() 
         : false;
-    const hasBypass = profile?.is_admin || profile?.is_moderator;
+    const hasBypass = profile?.is_moderator;
     
     // Calculate index to check if it's within free chapters range
     const currentIndex = allChapters.findIndex(c => String(c.id) === String(chapterId));

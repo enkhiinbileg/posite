@@ -114,7 +114,7 @@ function ProfileContent() {
     }
 
     const user8DigitId = getUser8DigitId(user, profile);
-    const isVipActive = profile?.is_admin || profile?.is_vip || false;
+    const isVipActive = profile?.is_vip || false;
 
     return (
         <main className="min-h-screen w-full bg-[#0a0610] text-white pb-28 pt-8">

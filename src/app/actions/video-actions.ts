@@ -66,13 +66,14 @@ export async function getVideoDetailAction(id: string, userId?: string) {
 
         if (userId) {
             // Check if user is admin or VIP
+            // Check if user is VIP
             const { data: profile } = await supabaseAdmin
                 .from('profiles')
-                .select('is_admin, is_vip, is_nsfw_vip')
+                .select('is_vip, is_nsfw_vip')
                 .eq('id', userId)
                 .maybeSingle();
 
-            if (profile && (profile.is_admin || profile.is_vip || profile.is_nsfw_vip)) {
+            if (profile && (profile.is_vip || profile.is_nsfw_vip)) {
                 hasAccess = true;
             }
 

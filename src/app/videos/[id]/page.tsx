@@ -39,7 +39,7 @@ export default function VideoDetailPage() {
     const [saved, setSaved] = useState(false);
     const [descExpanded, setDescExpanded] = useState(false);
 
-    const isVipUser = profile?.is_admin || profile?.is_vip || profile?.is_nsfw_vip || false;
+    const isVipUser = profile?.is_vip || profile?.is_nsfw_vip || false;
 
     useEffect(() => {
         async function fetchDetail() {
