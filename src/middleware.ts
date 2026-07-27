@@ -60,8 +60,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - api/supabase (proxy exclusion)
+     * - api/proxy-upload (upload proxy exclusion to bypass 10MB limit)
      * - auth/callback (OAuth callback handler)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/supabase|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/supabase|api/proxy-upload|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
