@@ -181,7 +181,7 @@ export default function VideosPage() {
                                         <img 
                                             src={cat.first_video_thumbnail || cat.thumbnail_url || "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop"} 
                                             alt={cat.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
+                                            className="w-full h-full object-cover"
                                         />
                                         {/* Bottom-left View / Video Count Badge */}
                                         <div className="absolute bottom-1.5 left-1.5 bg-black/80 backdrop-blur-md text-amber-400 font-mono font-black text-[10px] px-2 py-0.5 rounded-md border border-amber-500/20 shadow">
