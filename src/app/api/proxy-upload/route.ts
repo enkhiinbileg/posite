@@ -12,14 +12,22 @@ export async function PUT(request: NextRequest) {
     }
 
     try {
+        const contentLength = request.headers.get('content-length');
+        
+        const headers: HeadersInit = {
+            'Content-Type': contentType || 'application/octet-stream',
+        };
+        
+        if (contentLength) {
+            headers['Content-Length'] = contentLength;
+        }
+
         // We forward the raw stream directly to R2 using fetch.
         // This avoids memory limits and Next.js body size limits because we never buffer the body.
         const response = await fetch(targetUrl, {
             method: 'PUT',
             body: request.body,
-            headers: {
-                'Content-Type': contentType || 'application/octet-stream',
-            },
+            headers,
             // @ts-ignore - required for Node.js fetch when streaming a body
             duplex: 'half'
         });
