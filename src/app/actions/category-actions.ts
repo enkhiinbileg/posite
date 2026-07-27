@@ -43,25 +43,31 @@ export async function getCategoriesWithFirstVideoAction(): Promise<{ success: bo
 
     const { data: videos } = await adminDb
       .from('videos')
-      .select('id, title, thumbnail_url, views, created_at, is_nsfw');
+      .select('id, title, description, thumbnail_url, views, created_at, is_nsfw')
+      .order('created_at', { ascending: false });
 
     const allVideos = videos || [];
 
     const result: CategoryWithStats[] = allCategories.map((cat: any) => {
-      const catVideos = allVideos;
+      const catNameLower = cat.name.toLowerCase();
+
+      const catVideos = allVideos.filter((v: any) => {
+        const vDesc = (v.description || "").toLowerCase();
+        const vTitle = (v.title || "").toLowerCase();
+        return vDesc.includes(catNameLower) || vTitle.includes(catNameLower) || catNameLower === 'бүх видео';
+      });
+
       const totalViews = catVideos.reduce((sum: number, v: any) => sum + (v.views || 0), 0);
       const videoCount = catVideos.length;
 
-      const firstVideo = catVideos[0];
-      const firstThumbnail = cat.thumbnail_url || 
-        firstVideo?.thumbnail_url || 
-        '/logo.png';
+      const latestVideo = catVideos[0];
+      const latestThumbnail = latestVideo?.thumbnail_url || cat.thumbnail_url || '/logo.png';
 
       return {
         ...cat,
         video_count: videoCount,
         total_views: totalViews,
-        first_video_thumbnail: firstThumbnail
+        first_video_thumbnail: latestThumbnail
       };
     });
 
