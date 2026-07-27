@@ -24,8 +24,7 @@ export default function AdminUsers() {
     const [pricingPlans, setPricingPlans] = useState<any[]>([]);
     const [isGranting, setIsGranting] = useState(false);
     const [customDays, setCustomDays] = useState<number>(30);
-    const [nsfwVipModal, setNsfwVipModal] = useState<{ userId: string, userName: string } | null>(null);
-    const [nsfwDays, setNsfwDays] = useState<number>(30);
+
     const [videoModal, setVideoModal] = useState<{ userId: string, userName: string } | null>(null);
     const [userAccess, setUserAccess] = useState<any[]>([]);
     const [allVideos, setAllVideos] = useState<any[]>([]);
@@ -179,51 +178,12 @@ export default function AdminUsers() {
         if (!result.success) {
             toast.error("Алдаа гарлаа: " + result.error);
         } else {
-            setUsers(users.map(u => u.id === id ? { ...u, is_vip: false, vip_expiration: null } : u));
+            setUsers(users.map(u => u.id === id ? { ...u, is_vip: false, vip_expiration: null, nsfw_vip_expiration: null } : u));
             toast.success("VIP эрх цуцлагдлаа!");
         }
     }
 
-    async function grantNsfwVip() {
-        if (!nsfwVipModal || isGranting) return;
-        setIsGranting(true);
-        const toastId = toast.loading("+18 VIP эрх олгож байна...");
 
-        try {
-            const { data: { user: adminUser } } = await supabase.auth.getUser();
-            const result = await grantNsfwVipAction({
-                userId: nsfwVipModal.userId,
-                adminId: adminUser?.id || '',
-                durationDays: nsfwDays
-            });
-
-            if (!result.success) {
-                toast.error("Алдаа гарлаа: " + result.error, { id: toastId });
-            } else {
-                toast.success(`${nsfwVipModal.userName}-д +18 VIP эрх олголоо!`, { id: toastId });
-                setNsfwVipModal(null);
-                fetchUsers(search, filter);
-            }
-        } catch (error: any) {
-            toast.error("Алдаа гарлаа: " + error.message, { id: toastId });
-        } finally {
-            setIsGranting(false);
-        }
-    }
-
-    async function revokeNsfwVip(id: string) {
-        if (!confirm("Та энэ хэрэглэгчийн +18 VIP эрхийг цуцлахдаа итгэлтэй байна уу?")) return;
-        
-        const { data: { user: adminUser } } = await supabase.auth.getUser();
-        const result = await revokeNsfwVipAction(id, adminUser?.id || '');
-        
-        if (!result.success) {
-            toast.error("Алдаа гарлаа: " + result.error);
-        } else {
-            setUsers(users.map(u => u.id === id ? { ...u, nsfw_vip_expiration: null } : u));
-            toast.success("+18 VIP эрх цуцлагдлаа!");
-        }
-    }
 
     async function handleGrantVideo() {
         if (!videoModal || !selectedVideo || isGranting) return;
@@ -445,23 +405,7 @@ export default function AdminUsers() {
                                                             </button>
                                                         )}
 
-                                                        {user.nsfw_vip_expiration ? (
-                                                            <button
-                                                                onClick={() => revokeNsfwVip(user.id)}
-                                                                className="px-2 py-1 rounded-md text-[9px] font-black transition-all border flex items-center gap-1 bg-red-500/5 border-red-500/10 hover:bg-red-500/20 text-red-500 uppercase tracking-tighter"
-                                                            >
-                                                                <X className="w-2 h-2" />
-                                                                +18 хасах
-                                                            </button>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => setNsfwVipModal({ userId: user.id, userName: user.full_name || user.username || "Нэргүй" })}
-                                                                className="px-2 py-1 rounded-md text-[9px] font-black transition-all border flex items-center gap-1 bg-red-500/5 border-red-500/10 hover:bg-red-500/20 text-red-500 uppercase tracking-tighter"
-                                                            >
-                                                                <Crown className="w-2 h-2" />
-                                                                +18 VIP
-                                                            </button>
-                                                        )}
+
                                                         <button
                                                             onClick={() => setVideoModal({ userId: user.id, userName: user.full_name || user.username || "Нэргүй" })}
                                                             className="px-2 py-1 rounded-md text-[9px] font-black transition-all border flex items-center gap-1 bg-blue-500/5 border-blue-500/10 hover:bg-blue-500/20 text-blue-500 uppercase tracking-tighter"
@@ -585,48 +529,7 @@ export default function AdminUsers() {
                 </div>
             )}
 
-            {/* NSFW VIP Grant Modal */}
-            {nsfwVipModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-[#121212] border border-white/10 w-full max-w-sm rounded-3xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-200">
-                        <button
-                            onClick={() => setNsfwVipModal(null)}
-                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 text-muted hover:text-white transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
 
-                        <div className="text-center mb-6">
-                            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">+18 VIP эрх олгох</h3>
-                            <p className="text-muted text-sm">{nsfwVipModal.userName}</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex flex-col gap-2 p-3 rounded-2xl bg-surface border border-white/5 group hover:border-red-500/50 transition-all">
-                                <label className="text-[10px] uppercase font-black tracking-widest text-muted group-hover:text-red-500 transition-colors pl-1">VIP хугацаа (Хоногоор)</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="number"
-                                        value={nsfwDays}
-                                        onChange={(e) => setNsfwDays(parseInt(e.target.value) || 0)}
-                                        className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50"
-                                        placeholder="Хоног"
-                                        min="1"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={grantNsfwVip}
-                                disabled={isGranting || nsfwDays < 1}
-                                className="w-full py-4 rounded-2xl bg-red-600 text-white font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20"
-                            >
-                                {isGranting ? "Олгож байна..." : "Эрх Олгох"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Video Access Modal */}
             {videoModal && (

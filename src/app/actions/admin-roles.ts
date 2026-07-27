@@ -90,7 +90,9 @@ export async function grantVipAction(params: {
     // Update profile
     const { error } = await db.from('profiles').update({
         is_vip: true,
-        vip_expiration: newExpiration.toISOString()
+        vip_expiration: newExpiration.toISOString(),
+        nsfw_vip_expiration: newExpiration.toISOString(),
+        show_nsfw: true
     }).eq('id', userId);
 
     if (error) return { success: false, error: error.message };
@@ -145,7 +147,8 @@ export async function revokeVipAction(userId: string, adminId: string, lastGrant
 
     const { error } = await db.from('profiles').update({
         is_vip: false,
-        vip_expiration: null
+        vip_expiration: null,
+        nsfw_vip_expiration: null
     }).eq('id', userId);
 
     if (error) return { success: false, error: error.message };
