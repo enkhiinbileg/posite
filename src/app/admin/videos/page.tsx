@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getVideosAction, createVideoAction, updateVideoAction, deleteVideoAction } from "@/app/actions/video-actions";
 import { uploadImage } from "@/app/actions/upload-image";
 import { 
-    Plus, Trash2, Edit, Save, X, Loader2, 
+    Plus, Trash2, Edit, Save, X, Loader2, Check,
     Image as ImageIcon, Film, DollarSign, Clock, Shield, Ticket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -121,21 +121,40 @@ export default function AdminVideosPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-        uploadData.append('bucketPath', 'videos/thumbnails');
+        const loadingToast = toast.loading("Зураг хуулж байна...");
 
-        toast.promise(uploadImage(uploadData), {
-            loading: 'Зураг хуулж байна...',
-            success: (res: any) => {
-                if (res.success) {
-                    setFormData({ ...formData, thumbnail_url: res.url });
-                    return 'Зураг амжилттай хуулагдлаа';
+        try {
+            const { getPresignedUrl } = await import("@/lib/r2");
+            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            const filePath = `thumbnails/${fileName}`;
+
+            const res = await getPresignedUrl(filePath, file.type);
+            if (!res.success || !res.url) throw new Error(res.error || "URL үүсгэхэд алдаа гарлаа");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', res.url);
+            xhr.setRequestHeader('Content-Type', file.type);
+
+            xhr.onload = () => {
+                toast.dismiss(loadingToast);
+                if (xhr.status === 200) {
+                    setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
+                    toast.success("Зураг амжилттай хуулагдлаа!");
+                } else {
+                    toast.error("Зураг хуулахад алдаа гарлаа");
                 }
-                throw new Error(res.error);
-            },
-            error: 'Хуулахад алдаа гарлаа'
-        });
+            };
+
+            xhr.onerror = () => {
+                toast.dismiss(loadingToast);
+                toast.error("Сүлжээний алдаа гарлаа");
+            };
+
+            xhr.send(file);
+        } catch (error: any) {
+            toast.dismiss(loadingToast);
+            toast.error(error.message || "Зураг хуулахад алдаа гарлаа");
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -242,16 +261,33 @@ export default function AdminVideosPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Thumbnail Зураг</label>
-                                        <div className="flex gap-4">
+                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                                            <span>Thumbnail Зураг</span>
+                                            {formData.thumbnail_url && (
+                                                <span className="text-emerald-400 font-bold text-[10px] flex items-center gap-1">
+                                                    <Check className="w-3 h-3 text-emerald-400" /> Зураг бэлэн
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="flex gap-3 items-center">
+                                            {formData.thumbnail_url && (
+                                                <div className="w-14 h-12 rounded-xl overflow-hidden border-2 border-emerald-500 shrink-0 relative bg-black shadow-md">
+                                                    <img src={formData.thumbnail_url} alt="Preview" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
                                             <input 
                                                 value={formData.thumbnail_url}
                                                 onChange={(e) => setFormData({...formData, thumbnail_url: e.target.value})}
                                                 className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all text-xs"
                                                 placeholder="URL эсвэл файл хуулах"
                                             />
-                                            <label className="cursor-pointer p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                                <ImageIcon className="w-5 h-5 text-zinc-400" />
+                                            <label className={cn(
+                                                "cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-center shrink-0",
+                                                formData.thumbnail_url 
+                                                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400" 
+                                                    : "bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400"
+                                            )}>
+                                                <ImageIcon className="w-5 h-5" />
                                                 <input type="file" className="hidden" accept="image/*" onChange={handleThumbnailUpload} />
                                             </label>
                                         </div>
@@ -262,12 +298,16 @@ export default function AdminVideosPage() {
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center justify-between">
                                             <span>Бичлэгийн URL</span>
-                                            {uploadProgress > 0 && (
+                                            {uploadProgress > 0 ? (
                                                 <span className="text-primary font-black animate-pulse flex items-center gap-2">
                                                     <Loader2 className="w-3 h-3 animate-spin" />
                                                     ХУУЛЖ БАЙНА: {uploadProgress}%
                                                 </span>
-                                            )}
+                                            ) : formData.video_url ? (
+                                                <span className="text-emerald-400 font-bold text-[10px] flex items-center gap-1">
+                                                    <Check className="w-3 h-3 text-emerald-400" /> Бичлэг бэлэн
+                                                </span>
+                                            ) : null}
                                         </label>
                                         <div className="flex gap-4 relative">
                                             <input 
@@ -278,12 +318,14 @@ export default function AdminVideosPage() {
                                                 placeholder="YouTube линк эсвэл файл хуулах"
                                             />
                                             <label className={cn(
-                                                "cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-center relative overflow-hidden",
+                                                "cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-center relative overflow-hidden shrink-0",
                                                 uploadProgress > 0 
                                                     ? "bg-primary/20 border-primary/40 pointer-events-none" 
-                                                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                                                    : formData.video_url
+                                                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
+                                                    : "bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400"
                                             )}>
-                                                <Film className={cn("w-5 h-5 text-zinc-400", uploadProgress > 0 && "text-primary animate-bounce")} />
+                                                <Film className={cn("w-5 h-5", uploadProgress > 0 && "text-primary animate-bounce")} />
                                                 <input type="file" className="hidden" accept="video/*" onChange={handleVideoUpload} />
                                                 
                                                 {/* Circular Progress Background for the icon button */}
