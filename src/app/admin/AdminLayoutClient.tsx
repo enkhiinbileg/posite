@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-    Loader2, LayoutDashboard, Film, Tag, Users, Wallet, Bell, Home, LogOut, ChevronRight, Shield
+    Loader2, LayoutDashboard, Film, Tag, Users, Wallet, Bell, Home, LogOut, ChevronRight, Shield, Crown
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
