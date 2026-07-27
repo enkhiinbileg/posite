@@ -18,6 +18,9 @@ export default function AdminVideosPage() {
     const [showForm, setShowForm] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [localThumbnailPreview, setLocalThumbnailPreview] = useState<string>('');
+    const [thumbnailReady, setThumbnailReady] = useState(false);
+    const [videoReady, setVideoReady] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -124,17 +127,17 @@ export default function AdminVideosPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 1. Instant Local Preview so user sees image immediately!
+        // 1. Show instant local preview (only for UI preview, NOT saved to DB)
         const reader = new FileReader();
         reader.onload = (event) => {
             if (event.target?.result) {
-                setFormData(prev => ({ ...prev, thumbnail_url: event.target!.result as string }));
-                toast.success("Зураг сонгогдлоо!");
+                setLocalThumbnailPreview(event.target!.result as string);
+                toast.info("Зураг R2-руу байршуулж байна...");
             }
         };
         reader.readAsDataURL(file);
 
-        // 2. Upload to Cloudflare R2 CDN in background
+        // 2. Upload to Cloudflare R2 CDN and save ONLY the public URL
         try {
             const { getPresignedUrl } = await import("@/lib/r2");
             const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
@@ -148,12 +151,17 @@ export default function AdminVideosPage() {
                 xhr.onload = () => {
                     if (xhr.status === 200 && res.publicUrl) {
                         setFormData(prev => ({ ...prev, thumbnail_url: res.publicUrl! }));
+                        setThumbnailReady(true);
+                        toast.success("✓ Зураг R2-д амжилттай хадгалагдлаа!");
+                    } else {
+                        toast.error("Зураг хуулахад алдаа гарлаа.");
                     }
                 };
+                xhr.onerror = () => toast.error("Зураг хуулахад сүлжээний алдаа гарлаа.");
                 xhr.send(file);
             }
         } catch (error) {
-            // Ignore R2 error, local preview data URL is already set!
+            toast.error("Зураг байршуулахад алдаа гарлаа.");
         }
     };
 
