@@ -7,7 +7,7 @@ export async function getVideosAction() {
     try {
         const { data, error } = await supabaseAdmin
             .from('videos')
-            .select('*, webtoons(title, image)')
+            .select('*')
             .order('created_at', { ascending: false });
 
         if (error) throw error;

@@ -43,29 +43,18 @@ export async function getCategoriesWithFirstVideoAction(): Promise<{ success: bo
 
     const { data: videos } = await adminDb
       .from('videos')
-      .select('id, title, thumbnail_url, views, created_at, is_nsfw, webtoons(id, title, image, genres)');
+      .select('id, title, thumbnail_url, views, created_at, is_nsfw');
 
     const allVideos = videos || [];
 
     const result: CategoryWithStats[] = allCategories.map((cat: any) => {
-      const catVideos = allVideos.filter((v: any) => {
-        const webtoonObj = Array.isArray(v.webtoons) ? v.webtoons[0] : v.webtoons;
-        const genres = Array.isArray(webtoonObj?.genres) ? webtoonObj.genres : [];
-        const isMatch = genres.some((g: string) => 
-          g.toLowerCase() === cat.name.toLowerCase() || 
-          g.toLowerCase() === cat.slug.toLowerCase()
-        );
-        return isMatch || cat.name === 'Бүх видео';
-      });
-
+      const catVideos = allVideos;
       const totalViews = catVideos.reduce((sum: number, v: any) => sum + (v.views || 0), 0);
       const videoCount = catVideos.length;
 
       const firstVideo = catVideos[0];
-      const webtoonObj = Array.isArray(firstVideo?.webtoons) ? firstVideo.webtoons[0] : firstVideo?.webtoons;
       const firstThumbnail = cat.thumbnail_url || 
         firstVideo?.thumbnail_url || 
-        webtoonObj?.image || 
         '/logo.png';
 
       return {
