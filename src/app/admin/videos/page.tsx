@@ -160,9 +160,12 @@ export default function AdminVideosPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
+
+        const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
         const payload = {
             ...formData,
-            webtoon_id: formData.webtoon_id || null
+            webtoon_id: isValidUUID(formData.webtoon_id) ? formData.webtoon_id : null
         };
         
         const res = editingId 
