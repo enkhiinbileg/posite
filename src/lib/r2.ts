@@ -6,7 +6,7 @@ function getR2Config() {
     const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID || "0c79d870e37dcd2ad670a834d0488d32";
     const accessKeyId = process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID || "3cdfddfe7e84d5a16b6a894679d4deb3";
     const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || "45e54cac33b41efb421b254f5106667de1fe586be0dec7a90f6843e5cd4b0baa";
-    const R2_BUCKET_NAME = process.env.NEXT_PUBLIC_R2_BUCKET_NAME || "posite-media";
+    const R2_BUCKET_NAME = process.env.NEXT_PUBLIC_R2_BUCKET_NAME || "pomongolia";
     const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-dad9aa0d399f4639bd3a5dd6f8310303.r2.dev";
 
     const aws = new AwsClient({
