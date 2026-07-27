@@ -98,7 +98,7 @@ export default function VideosPage() {
                                 return (
                                     <Link 
                                         key={cat.id || cat.name} 
-                                        href={`/videos?category=${encodeURIComponent(cat.name)}`}
+                                        href={`/category/${encodeURIComponent(cat.slug || cat.name.toLowerCase())}`}
                                         className="group block space-y-1.5 cursor-pointer"
                                     >
                                         <div className={`relative aspect-[16/10] rounded-xl overflow-hidden bg-white/5 shadow-md border ${

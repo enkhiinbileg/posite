@@ -162,9 +162,13 @@ export default function AdminVideosPage() {
         setIsSaving(true);
 
         const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const catName = formData.webtoon_id && !isValidUUID(formData.webtoon_id) ? formData.webtoon_id : '';
 
         const payload = {
             ...formData,
+            description: catName 
+                ? (formData.description && !formData.description.includes(catName) ? `${formData.description} [Category: ${catName}]` : formData.description || `[Category: ${catName}]`)
+                : formData.description,
             webtoon_id: isValidUUID(formData.webtoon_id) ? formData.webtoon_id : null
         };
         
