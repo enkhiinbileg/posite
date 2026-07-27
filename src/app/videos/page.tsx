@@ -1,9 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getVideosGroupedByWebtoonAction, getVideosAction } from "@/app/actions/video-actions";
+import { getVideosAction } from "@/app/actions/video-actions";
 import { VideoCard } from "@/components/video/VideoCard";
 import { Film, Loader2, RefreshCw, ChevronDown } from "lucide-react";
+import Link from "next/link";
+
+const MOST_POPULAR_CATEGORIES = [
+    { name: "Friend", count: "1.55M", image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop" },
+    { name: "Japanese", count: "6.01M", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" },
+    { name: "Anime", count: "1.31M", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop" },
+    { name: "Teen 18+", count: "1.31M", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop" },
+    { name: "Korean", count: "127K", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" },
+    { name: "Cheating", count: "1.21M", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop" },
+    { name: "Hot Mom", count: "1.55M", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=400&auto=format&fit=crop" },
+    { name: "Public", count: "4.01M", image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=400&auto=format&fit=crop" },
+    { name: "Japanese Hardcore", count: "2.00M", image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400&auto=format&fit=crop" },
+    { name: "Homemade", count: "624K", image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=400&auto=format&fit=crop" },
+    { name: "POV (Point Of View)", count: "828K", image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=400&auto=format&fit=crop" },
+    { name: "Chinese Teen 18+", count: "471K", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop" },
+    { name: "Cum Inside", count: "6.55M", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400&auto=format&fit=crop" },
+    { name: "Animation", count: "1.41M", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=400&auto=format&fit=crop" },
+    { name: "Skinny Big Tits", count: "467K", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" },
+    { name: "Uncensored", count: "1.75M", image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=400&auto=format&fit=crop" },
+    { name: "Goth", count: "184K", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop" },
+    { name: "Hentai", count: "103K", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop" }
+];
 
 const DEMO_VIDEOS = [
     {
@@ -61,7 +83,6 @@ const DEMO_VIDEOS = [
 export default function VideosPage() {
     const [videos, setVideos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadData() {
@@ -71,10 +92,9 @@ export default function VideosPage() {
                 if (vidRes.success && vidRes.data && vidRes.data.length > 0) {
                     setVideos(vidRes.data);
                 } else {
-                    // Fallback to DEMO_VIDEOS if DB is empty so page looks amazing!
                     setVideos(DEMO_VIDEOS);
                 }
-            } catch (err: any) {
+            } catch (err) {
                 setVideos(DEMO_VIDEOS);
             } finally {
                 setLoading(false);
@@ -85,58 +105,91 @@ export default function VideosPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0a0610] flex flex-col items-center justify-center gap-4 text-white">
-                <Loader2 className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin text-red-600" />
-                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Ачаалж байна...</p>
+            <div className="min-h-screen bg-[#f8f8f8] flex flex-col items-center justify-center gap-4 text-zinc-800">
+                <Loader2 className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin text-amber-500" />
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Loading...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0610] text-white pt-[68px] pb-24">
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="min-h-screen bg-[#f8f8f8] text-zinc-900 pt-[68px] pb-24 font-sans">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
 
-                {/* FUQ Style Page Title Row */}
-                <div className="flex items-baseline gap-2">
-                    <h1 className="text-2xl font-black tracking-tight text-white font-sans">
-                        POV (Point Of View) Videos
-                    </h1>
-                    <span className="text-sm font-semibold text-zinc-400 font-sans">
-                        (9,384,381)
-                    </span>
-                </div>
+                {/* 1. MOST POPULAR CATEGORIES SECTION (Exact FUQ 6-Column Grid) */}
+                <section className="space-y-4">
+                    <h2 className="text-xl font-bold tracking-tight text-zinc-900">
+                        Most Popular Categories
+                    </h2>
 
-                {/* FUQ Style Dropdown Controls Row */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
-                    {/* Left Dropdown Filters */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        {['Date added', 'Duration', 'Quality', 'VR', 'Source'].map((filterName) => (
-                            <button
-                                key={filterName}
-                                className="px-3.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {MOST_POPULAR_CATEGORIES.map((cat) => (
+                            <Link 
+                                key={cat.name} 
+                                href={`/videos?category=${encodeURIComponent(cat.name)}`}
+                                className="group block space-y-1.5 cursor-pointer"
                             >
-                                <span>{filterName}</span>
-                                <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
-                            </button>
+                                <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-zinc-200 shadow-sm border border-zinc-200">
+                                    <img 
+                                        src={cat.image} 
+                                        alt={cat.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    {/* Bottom-left View Count Badge */}
+                                    <div className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-white/10">
+                                        {cat.count}
+                                    </div>
+                                </div>
+                                <h3 className="text-xs font-bold text-zinc-800 group-hover:text-red-600 truncate transition-colors">
+                                    {cat.name}
+                                </h3>
+                            </Link>
                         ))}
                     </div>
+                </section>
 
-                    {/* Right Sort By Dropdown */}
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
-                        <span>Sort by :</span>
-                        <button className="flex items-center gap-1 font-bold text-white hover:text-red-500 cursor-pointer">
-                            <span>Popularity</span>
-                            <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
-                        </button>
+                {/* 2. POV VIDEOS SECTION (Exact FUQ 5-Column Video Grid) */}
+                <section className="space-y-4 pt-4 border-t border-zinc-200">
+                    <div className="flex items-baseline gap-2">
+                        <h2 className="text-xl font-bold tracking-tight text-zinc-900 font-sans">
+                            POV (Point Of View) Videos
+                        </h2>
+                        <span className="text-xs font-semibold text-zinc-400 font-sans">
+                            (9,384,381)
+                        </span>
                     </div>
-                </div>
 
-                {/* 100% FUQ Exact 5-Column Video Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-6">
-                    {videos.map((video) => (
-                        <VideoCard key={video.id} video={video} />
-                    ))}
-                </div>
+                    {/* FUQ Style Dropdown Controls Row */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {['Date added', 'Duration', 'Quality', 'VR', 'Source'].map((filterName) => (
+                                <button
+                                    key={filterName}
+                                    className="px-3.5 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                                >
+                                    <span>{filterName}</span>
+                                    <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+                            <span>Sort by :</span>
+                            <button className="flex items-center gap-1 font-bold text-zinc-900 hover:text-red-600 cursor-pointer">
+                                <span>Popularity</span>
+                                <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 5-Column Video Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-6">
+                        {videos.map((video) => (
+                            <VideoCard key={video.id} video={video} />
+                        ))}
+                    </div>
+                </section>
+
             </div>
         </div>
     );

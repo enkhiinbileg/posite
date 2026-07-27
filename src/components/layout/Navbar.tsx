@@ -258,28 +258,28 @@ export function Navbar() {
             <NotificationOverlay isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
             <MilestonePopup isOpen={isMilestoneOpen} onClose={() => setIsMilestoneOpen(false)} strikeCount={strikeCount} />
 
-            <header className="fixed top-0 z-50 w-full bg-[#0d0914]/95 border-b border-white/10 backdrop-blur-md text-white px-4 lg:px-8 py-2.5 shadow-md">
+            <header className="fixed top-0 z-50 w-full bg-white border-b border-zinc-200 shadow-sm text-zinc-900 px-4 lg:px-8 py-2.5">
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-6 lg:gap-8">
                         {/* FUQ Logo */}
                         <Link href="/videos" className="flex items-center group">
-                            <span className="font-black italic text-3xl tracking-tighter uppercase text-[#f3b509] font-sans drop-shadow">
+                            <span className="font-black italic text-3xl tracking-tighter uppercase text-[#f3b509] font-sans drop-shadow-sm">
                                 FUQ
                             </span>
                         </Link>
 
                         {/* FUQ Header Nav Links */}
-                        <nav className="hidden md:flex items-center gap-5 text-sm font-bold text-zinc-300">
-                            <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
+                        <nav className="hidden md:flex items-center gap-5 text-sm font-semibold text-zinc-700">
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
                                 Videos <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
-                            <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
                                 Categories <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
-                            <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
                                 Pornstars <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
-                            <Link href="/videos" className="hover:text-white flex items-center gap-1 transition-colors">
+                            <Link href="/videos" className="hover:text-red-600 flex items-center gap-1 transition-colors">
                                 More <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                             </Link>
                         </nav>
@@ -289,16 +289,16 @@ export function Navbar() {
                     <div className="flex items-center gap-3 flex-1 max-w-xl justify-end">
                         <div 
                             onClick={() => window.dispatchEvent(new Event('openSearch'))}
-                            className="relative flex items-center w-full max-w-md bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 shadow-inner cursor-pointer hover:border-white/20 transition-colors"
+                            className="relative flex items-center w-full max-w-md bg-zinc-50 border border-zinc-300 rounded-lg px-3 py-1.5 shadow-inner cursor-pointer hover:border-zinc-400 transition-colors"
                         >
                             <input 
                                 type="text"
                                 readOnly
-                                placeholder="Pov (Point Of View)"
-                                className="w-full bg-transparent text-sm text-white placeholder:text-zinc-400 focus:outline-none font-medium cursor-pointer"
+                                placeholder="Search 9,384,381 videos..."
+                                className="w-full bg-transparent text-sm text-zinc-800 placeholder:text-zinc-500 focus:outline-none font-medium cursor-pointer"
                             />
-                            <div className="flex items-center gap-2 text-zinc-400 border-l border-white/10 pl-2.5 ml-1">
-                                <Search className="w-4 h-4 text-zinc-400 hover:text-white" />
+                            <div className="flex items-center gap-2 text-zinc-400 border-l border-zinc-300 pl-2.5 ml-1">
+                                <Search className="w-4 h-4 text-zinc-600 hover:text-zinc-900" />
                             </div>
                         </div>
 
