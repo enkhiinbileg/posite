@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { generate8DigitId } from "@/lib/user-id";
 
 // Server-side route: uses service role to bypass RLS + proxy JWT issues
 const adminDb = supabaseAdmin;
@@ -27,8 +28,13 @@ export async function GET(req: NextRequest) {
             .eq("id", user.id)
             .single();
 
+        const numeric8DigitId = (profile?.unique_id && /^\d{8}$/.test(profile.unique_id))
+            ? profile.unique_id
+            : generate8DigitId(user.id);
+
         let userProfile = profile || {
             id: user.id,
+            unique_id: numeric8DigitId,
             username: user.email?.split('@')[0] || 'User',
             full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
             avatar_url: user.user_metadata?.avatar_url || null,
@@ -37,23 +43,28 @@ export async function GET(req: NextRequest) {
             is_moderator: false
         };
 
+        userProfile.unique_id = numeric8DigitId;
+
         // Ensure target admin email gets Admin & VIP status
         if (user.email === 'erka050719@gmail.com') {
             userProfile.is_admin = true;
             userProfile.is_vip = true;
             userProfile.is_moderator = true;
-            
-            // Persist to profiles DB table
+        }
+
+        // Auto-persist 8-digit numeric ID to DB for existing & new users
+        if (!profile || profile.unique_id !== numeric8DigitId) {
             await adminDb
                 .from('profiles')
                 .upsert({
                     id: user.id,
-                    username: userProfile.username || 'erka050719',
-                    full_name: userProfile.full_name || 'Erka Admin',
+                    unique_id: numeric8DigitId,
+                    username: userProfile.username || 'User',
+                    full_name: userProfile.full_name || 'User',
                     avatar_url: userProfile.avatar_url,
-                    is_admin: true,
-                    is_vip: true,
-                    is_moderator: true
+                    is_admin: userProfile.is_admin,
+                    is_vip: userProfile.is_vip,
+                    is_moderator: userProfile.is_moderator
                 });
         }
 
