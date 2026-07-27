@@ -172,10 +172,10 @@ export default function VideosPage() {
                                     href={`/videos?category=${encodeURIComponent(cat.name)}`}
                                     className="group block space-y-1.5 cursor-pointer"
                                 >
-                                    <div className={`relative aspect-[16/10] rounded-xl overflow-hidden bg-white/5 shadow-md border transition-all ${
+                                    <div className={`relative aspect-[16/10] rounded-xl overflow-hidden bg-white/5 shadow-md border ${
                                         isSelected 
                                             ? "border-red-600 ring-2 ring-red-600/50" 
-                                            : "border-white/10 group-hover:border-red-600/50"
+                                            : "border-white/10"
                                     }`}>
                                         {/* Dynamic Latest Video Thumbnail */}
                                         <img 
@@ -188,8 +188,8 @@ export default function VideosPage() {
                                             {formatCount(cat.video_count || 1550000)}
                                         </div>
                                     </div>
-                                    <h3 className={`text-xs font-bold truncate transition-colors ${
-                                        isSelected ? "text-red-500" : "text-zinc-300 group-hover:text-red-500"
+                                    <h3 className={`text-xs font-bold truncate ${
+                                        isSelected ? "text-red-500" : "text-zinc-300"
                                     }`}>
                                         {cat.name}
                                     </h3>
