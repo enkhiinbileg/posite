@@ -119,6 +119,11 @@ export default function AdminVideosPage() {
                     const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
                     setUploadProgress(percentage);
                 },
+                onAfterResponse: function (_req: any, res: any) {
+                    // Capture stream-media-id from Cloudflare TUS response (for cfut_ tokens)
+                    const mediaId = res.getHeader('stream-media-id');
+                    if (mediaId) data.uid = mediaId;
+                },
                 onSuccess: async function () {
                     // Store the Cloudflare UID in the database instead of the R2 URL
                     setFormData(prev => ({ ...prev, video_url: data.uid }));

@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { uploadLength, metadata } = body;
+        const { uploadLength } = body;
 
-        const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID; // We reuse this since it's the CF account ID
+        const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID;
         const token = process.env.CLOUDFLARE_STREAM_TOKEN;
 
         if (!accountId || !token) {
@@ -16,14 +16,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing uploadLength' }, { status: 400 });
         }
 
-        // Generate TUS Direct Upload URL
+        // cfut_ tokens are "Creator Upload Tokens" — used directly as TUS upload URL
+        // They do NOT work as Bearer API tokens
+        if (token.startsWith('cfut_')) {
+            return NextResponse.json({
+                uploadUrl: `https://upload.videodelivery.net/tus/${token}`,
+                uid: null  // UID will be captured from stream-media-id response header
+            });
+        }
+
+        // Regular API Token — call Cloudflare API to generate TUS upload URL
         const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?direct_user=true`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Tus-Resumable': '1.0.0',
                 'Upload-Length': uploadLength.toString(),
-                'Upload-Metadata': metadata || '' // optional base64 encoded metadata
             }
         });
 
@@ -35,9 +43,7 @@ export async function POST(request: NextRequest) {
             }, { status: 500 });
         }
 
-        // The Location header contains the one-time TUS upload URL
         const location = response.headers.get('Location');
-        // The stream-media-id header contains the Cloudflare Video ID (uid)
         const streamMediaId = response.headers.get('stream-media-id');
 
         if (!location) {
@@ -54,3 +60,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
