@@ -113,8 +113,8 @@ export function MenuDrawer() {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className={cn("text-xs font-black uppercase tracking-widest", isNsfwVip ? "text-rose-500" : (isRegularVip ? "text-yellow-500" : "text-white"))}>
-                                                    {isNsfwVip && isRegularVip ? "VIP + 18+ VIP" : isNsfwVip ? "18+ VIP Гишүүн" : "VIP Гишүүнчлэл"}
+                                                <h3 className={cn("text-xs font-black uppercase tracking-widest", anyVip ? "text-yellow-500" : "text-white")}>
+                                                    VIP Гишүүнчлэл
                                                 </h3>
                                                 <p className="text-[9px] text-zinc-500 font-bold uppercase">
                                                     {anyVip ? "Идэвхтэй" : "Идэвхгүй"}

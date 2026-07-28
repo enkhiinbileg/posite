@@ -415,7 +415,7 @@ export function Navbar() {
                                             </Link>
 
                                             {/* VIP Statuses */}
-                                            {isVip && (
+                                            {(isVip || isNsfwVip) ? (
                                                 <Link
                                                     href="/vip"
                                                     onClick={() => setIsProfileOpen(false)}
@@ -424,18 +424,7 @@ export function Navbar() {
                                                     <Crown className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                                                     <span className="text-sm font-medium text-yellow-500">VIP Гишүүн</span>
                                                 </Link>
-                                            )}
-                                            {isNsfwVip && (
-                                                <Link
-                                                    href="/vip"
-                                                    onClick={() => setIsProfileOpen(false)}
-                                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-500/10 transition-colors group/item"
-                                                >
-                                                    <Crown className="w-4 h-4 text-rose-500 fill-rose-500" />
-                                                    <span className="text-sm font-medium text-rose-500">18+ VIP Гишүүн</span>
-                                                </Link>
-                                            )}
-                                            {!isVip && !isNsfwVip && (
+                                            ) : (
                                                 <Link
                                                     href="/vip"
                                                     onClick={() => setIsProfileOpen(false)}

@@ -124,16 +124,10 @@ export function ProfileHeader({ user, profile, onUpdate, onSignOut }: ProfileHea
                                     {profile?.full_name || "Нэргүй"}
                                 </h1>
                                 <div className="flex flex-row items-center gap-2 flex-wrap justify-center mt-1 md:mt-0">
-                                    {profile?.is_vip && (!profile.vip_expiration || new Date(profile.vip_expiration) > new Date()) && (
+                                    {(profile?.is_vip || profile?.nsfw_vip_expiration) && (
                                         <span className="px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                                             <Crown className="w-3 h-3 fill-yellow-500/20" />
-                                            VIP {profile.vip_expiration ? `(${Math.max(0, Math.ceil((new Date(profile.vip_expiration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} хоног)` : ""}
-                                        </span>
-                                    )}
-                                    {profile?.nsfw_vip_expiration && (new Date(profile.nsfw_vip_expiration) > new Date()) && (
-                                        <span className="px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
-                                            <Crown className="w-3 h-3 fill-rose-500/20" />
-                                            18+ VIP ({Math.max(0, Math.ceil((new Date(profile.nsfw_vip_expiration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} хоног)
+                                            VIP {profile.vip_expiration ? `(${Math.max(0, Math.ceil((new Date(profile.vip_expiration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} хоног)` : (profile.nsfw_vip_expiration ? `(${Math.max(0, Math.ceil((new Date(profile.nsfw_vip_expiration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} хоног)` : "")}
                                         </span>
                                     )}
                                 </div>

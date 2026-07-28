@@ -298,13 +298,13 @@ export default function VideoDetailPage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="rounded-xl bg-gradient-to-br from-[#ff9000]/20 via-zinc-900 to-zinc-950 border border-[#ff9000]/30 p-5 space-y-4 sticky top-20"
+                                    className="rounded-xl bg-gradient-to-br from-red-600/20 via-zinc-900 to-zinc-950 border border-red-600/30 p-5 space-y-4 sticky top-20"
                                 >
                                     <div className="text-center space-y-3">
-                                        <div className="w-14 h-14 rounded-full bg-[#ff9000]/20 border border-[#ff9000]/40 flex items-center justify-center mx-auto">
-                                            <Crown className="w-7 h-7 text-[#ff9000] fill-[#ff9000]" />
+                                        <div className="w-14 h-14 rounded-full bg-red-600/20 border border-red-600/40 flex items-center justify-center mx-auto">
+                                            <Crown className="w-7 h-7 text-red-500 fill-red-500" />
                                         </div>
-                                        <h3 className="text-lg font-black text-white uppercase">VIP Гишүүнчлэл</h3>
+                                        <h3 className="text-lg font-black text-white uppercase">18+ VIP Гишүүнчлэл</h3>
                                         <p className="text-xs text-zinc-400 leading-relaxed">
                                             Бүх бичлэгийг хязгааргүй үзэх, 4K чанар, рекламгүй туршлага.
                                         </p>
@@ -312,17 +312,17 @@ export default function VideoDetailPage() {
                                     <div className="space-y-2">
                                         {['4K Ultra HD чанар', 'Хязгааргүй бичлэг', 'Реклам байхгүй', 'Офлайн хадгалах'].map((f) => (
                                             <div key={f} className="flex items-center gap-2 text-xs text-zinc-300">
-                                                <Check className="w-3.5 h-3.5 text-[#ff9000] flex-shrink-0" />
+                                                <Check className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
                                                 {f}
                                             </div>
                                         ))}
                                     </div>
                                     <button
                                         onClick={handleVipRedirect}
-                                        className="w-full py-3.5 rounded-xl bg-[#ff9000] hover:bg-[#e08000] text-black font-black uppercase text-xs tracking-wider transition-all shadow-lg shadow-[#ff9000]/20 flex items-center justify-center gap-2 cursor-pointer"
+                                        className="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black uppercase text-xs tracking-wider transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        <Crown className="w-4 h-4 fill-black" />
-                                        VIP Эрх Авах — 19,900₮/сар
+                                        <Crown className="w-4 h-4 fill-white" />
+                                        VIP Эрх Авах
                                     </button>
                                 </motion.div>
                             ) : (
