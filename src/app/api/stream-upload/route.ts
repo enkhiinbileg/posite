@@ -29,8 +29,10 @@ export async function POST(request: NextRequest) {
 
         if (response.status !== 201) {
             const errorText = await response.text();
-            console.error('Cloudflare TUS Error:', errorText);
-            return NextResponse.json({ error: 'Failed to create Cloudflare upload URL' }, { status: 500 });
+            console.error('Cloudflare TUS Error:', response.status, errorText);
+            return NextResponse.json({ 
+                error: `Cloudflare алдаа (${response.status}): ${errorText.slice(0, 200)}` 
+            }, { status: 500 });
         }
 
         // The Location header contains the one-time TUS upload URL
