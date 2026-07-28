@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Bell, User, LogOut, Medal, Crown, Settings, Youtube, Languages, Users, Flame, Calendar, ChevronDown } from "lucide-react";
+import { Search, Bell, User, LogOut, Medal, Crown, Settings, Languages, Flame, Calendar, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -435,22 +435,7 @@ export function Navbar() {
                                                 </Link>
                                             )}
 
-                                            <Link
-                                                href={isYouTuber ? "/admin/youtuber" : "/partner/apply"}
-                                                onClick={() => setIsProfileOpen(false)}
-                                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-600/10 transition-colors group/partner"
-                                            >
-                                                <Youtube className={cn(
-                                                    "w-4 h-4 transition-colors",
-                                                    isYouTuber ? "text-red-600" : "text-muted group-hover/partner:text-red-600"
-                                                )} />
-                                                <span className={cn(
-                                                    "text-sm font-medium transition-colors",
-                                                    isYouTuber ? "text-red-600" : "text-white"
-                                                )}>
-                                                    {isYouTuber ? "Partner Dashboard" : "Partner Program"}
-                                                </span>
-                                            </Link>
+
 
                                             {isTranslator && (
                                                 <Link
@@ -465,16 +450,7 @@ export function Navbar() {
                                                 </Link>
                                             )}
 
-                                            {(isTranslator || isYouTuber || isAdmin) && (
-                                                <Link
-                                                    href="/community"
-                                                    onClick={() => setIsProfileOpen(false)}
-                                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group/item"
-                                                >
-                                                    <Users className="w-4 h-4 text-muted group-hover/item:text-white" />
-                                                    <span className="text-sm font-medium text-white">Community Chat</span>
-                                                </Link>
-                                            )}
+
 
                                             <Link
                                                 href="/profile?tab=settings"
