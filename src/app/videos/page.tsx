@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { getVideosAction } from "@/app/actions/video-actions";
 import { getCategoriesWithFirstVideoAction, CategoryWithStats } from "@/app/actions/category-actions";
 import { VideoCard } from "@/components/video/VideoCard";
@@ -8,7 +8,7 @@ import { Film, Loader2, RefreshCw, ChevronDown, X, Tag } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function VideosPage() {
+function VideosContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const selectedCategory = searchParams.get("category") || "";
@@ -185,5 +185,18 @@ export default function VideosPage() {
 
             </div>
         </div>
+    );
+}
+
+export default function VideosPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#0a0610] flex flex-col items-center justify-center gap-4 text-white">
+                <Loader2 className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin text-red-600" />
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Ачаалж байна...</p>
+            </div>
+        }>
+            <VideosContent />
+        </Suspense>
     );
 }
