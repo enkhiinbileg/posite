@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-    Home, History, Settings, LibraryBig, Youtube, Languages, 
-    LogOut, ChevronRight, X, Crown, MessageCircle, User, Calendar, Film
+    Home, History, Settings, LibraryBig, Languages, 
+    LogOut, ChevronRight, X, Crown, User, Calendar, Film
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -146,13 +146,11 @@ export function MenuDrawer() {
                         </div>
 
                         {/* Admin/Special */}
-                        {(profile?.is_admin || profile?.is_moderator || profile?.is_youtuber) && (
+                        {(profile?.is_admin || profile?.is_moderator) && (
                             <div className="space-y-4">
                                 <h3 className="px-1 text-[10px] font-black text-zinc-600 uppercase tracking-[0.25em]">Удирдах</h3>
                                 <div className="space-y-1">
-                                    {profile?.is_youtuber && <MenuButton icon={Youtube} label="Partner Dashboard" color="text-red-500" onClick={() => handleLinkClick('/admin/youtuber')} />}
                                     {(profile?.is_admin || profile?.is_moderator) && <MenuButton icon={Languages} label="Translator Panel" color="text-purple-500" onClick={() => handleLinkClick('/translator/dashboard')} />}
-                                    <MenuButton icon={MessageCircle} label="Community Chat" onClick={() => handleLinkClick('/community')} />
                                 </div>
                             </div>
                         )}

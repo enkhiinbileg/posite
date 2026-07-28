@@ -13,7 +13,6 @@ import { ReferralTracker } from "./ReferralTracker";
 import { Suspense, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-import { SocialCommunity } from "./SocialCommunity";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -80,7 +79,6 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                         <ReferralTracker />
                     </Suspense>
                 )}
-                {/* {!hideLayout && <SocialCommunity />} */}
             </div>
         </GlobalErrorBoundary>
     );
