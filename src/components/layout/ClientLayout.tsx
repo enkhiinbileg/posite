@@ -80,7 +80,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                         <ReferralTracker />
                     </Suspense>
                 )}
-                {!hideLayout && <SocialCommunity />}
+                {/* {!hideLayout && <SocialCommunity />} */}
             </div>
         </GlobalErrorBoundary>
     );
