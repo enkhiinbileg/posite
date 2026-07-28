@@ -21,6 +21,9 @@ export default function AdminVideosPage() {
     const [localThumbnailPreview, setLocalThumbnailPreview] = useState<string>('');
     const [thumbnailReady, setThumbnailReady] = useState(false);
     const [videoReady, setVideoReady] = useState(false);
+    const [streamThumbnails, setStreamThumbnails] = useState<string[]>([]);
+    const [selectedThumbnailIdx, setSelectedThumbnailIdx] = useState<number | null>(null);
+    const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -116,12 +119,29 @@ export default function AdminVideosPage() {
                     const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
                     setUploadProgress(percentage);
                 },
-                onSuccess: function () {
+                onSuccess: async function () {
                     // Store the Cloudflare UID in the database instead of the R2 URL
                     setFormData(prev => ({ ...prev, video_url: data.uid }));
                     setVideoReady(true);
                     setUploadProgress(0);
                     toast.success("✓ Бичлэг Cloudflare-д амжилттай хадгалагдлаа!");
+
+                    // Auto-extract thumbnails from 10 different timestamps
+                    setThumbnailsLoading(true);
+                    setSelectedThumbnailIdx(null);
+                    toast.info("🖼️ Thumbnail-уудыг автоматаар тайрч байна...");
+                    
+                    // Wait a bit for Cloudflare to process the video
+                    await new Promise(r => setTimeout(r, 4000));
+
+                    // Generate 10 thumbnails at different percentages
+                    const percentages = [2, 10, 20, 30, 40, 50, 60, 70, 80, 90];
+                    const thumbUrls = percentages.map(pct =>
+                        `https://videodelivery.net/${data.uid}/thumbnails/thumbnail.jpg?time=${pct}%&height=360`
+                    );
+                    setStreamThumbnails(thumbUrls);
+                    setThumbnailsLoading(false);
+                    toast.success("🎨 10 thumbnail бэлэн боллоо! Сонгоно уу.");
                 }
             });
 
@@ -387,6 +407,68 @@ export default function AdminVideosPage() {
                                         )}
 
                                     </div>
+
+                                    {/* ─── Auto Thumbnail Extractor ─── */}
+                                    {(thumbnailsLoading || streamThumbnails.length > 0) && (
+                                        <div className="col-span-2 space-y-3">
+                                            <div className="flex items-center gap-3">
+                                                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                                    <ImageIcon className="w-3 h-3 text-primary" />
+                                                    🎬 Автомат Thumbnail — Нэгийг сонгоно уу
+                                                </label>
+                                                {selectedThumbnailIdx !== null && (
+                                                    <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
+                                                        <Check className="w-3 h-3" /> Сонгогдсон
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {thumbnailsLoading ? (
+                                                <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
+                                                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                                                    <span className="text-xs text-zinc-400 font-bold">Cloudflare-с кадрууд татаж байна...</span>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-5 gap-2">
+                                                    {streamThumbnails.map((url, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedThumbnailIdx(idx);
+                                                                setFormData(prev => ({ ...prev, thumbnail_url: url }));
+                                                                toast.success(`✓ ${[2, 10, 20, 30, 40, 50, 60, 70, 80, 90][idx]}% кадр thumbnail болгон сонгогдлоо!`);
+                                                            }}
+                                                            className={cn(
+                                                                "relative aspect-video rounded-xl overflow-hidden border-2 transition-all duration-200 group",
+                                                                selectedThumbnailIdx === idx
+                                                                    ? "border-primary shadow-lg shadow-primary/30 scale-105"
+                                                                    : "border-white/10 hover:border-white/30 hover:scale-[1.03]"
+                                                            )}
+                                                        >
+                                                            <img
+                                                                src={url}
+                                                                alt={`Frame ${idx + 1}`}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = '/logo.png';
+                                                                }}
+                                                            />
+                                                            {selectedThumbnailIdx === idx && (
+                                                                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                                    <Check className="w-5 h-5 text-white drop-shadow-lg" />
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/70 rounded text-[8px] font-black text-white/80">
+                                                                {[2, 10, 20, 30, 40, 50, 60, 70, 80, 90][idx]}%
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Категори / Ангилал</label>
                                         <select
